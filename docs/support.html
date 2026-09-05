@@ -1,0 +1,181 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Поддержка — TaskMail</title>
+  <meta name="description" content="Как пользоваться TaskMail, ответы на частые вопросы и связь с разработчиком.">
+  <style>
+    :root {
+      color-scheme: light dark;
+      --bg: #ffffff;
+      --surface: #f6f7f9;
+      --line: #e4e6ea;
+      --text: #16181d;
+      --muted: #545a66;
+      --accent: #4f46e5;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #16181c;
+        --surface: #1f2228;
+        --line: #2e333b;
+        --text: #e8eaee;
+        --muted: #b3b9c4;
+        --accent: #7c7cff;
+      }
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      padding: 48px 20px 80px;
+      font: 17px/1.65 -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+      color: var(--text);
+      background: var(--bg);
+    }
+
+    main { max-width: 720px; margin: 0 auto; }
+
+    .brand {
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      color: var(--muted);
+      margin-bottom: 8px;
+    }
+
+    h1 { font-size: 34px; line-height: 1.2; margin: 0 0 10px; letter-spacing: -0.02em; }
+    h2 { font-size: 21px; margin: 40px 0 12px; }
+    h3 { font-size: 17px; margin: 26px 0 6px; }
+    p, li { color: var(--text); }
+    .lead { font-size: 19px; color: var(--muted); margin: 0 0 8px; }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 18px 20px;
+      margin: 24px 0;
+    }
+
+    kbd {
+      font: 15px/1 ui-monospace, "Cascadia Mono", Consolas, monospace;
+      background: var(--bg);
+      border: 1px solid var(--line);
+      border-bottom-width: 2px;
+      border-radius: 6px;
+      padding: 3px 7px;
+    }
+
+    code {
+      font: 15px/1.4 ui-monospace, "Cascadia Mono", Consolas, monospace;
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 5px;
+      padding: 1px 6px;
+    }
+
+    a { color: var(--accent); }
+    ul { padding-left: 22px; }
+    li { margin: 6px 0; }
+
+    footer {
+      margin-top: 48px;
+      padding-top: 20px;
+      border-top: 1px solid var(--line);
+      color: var(--muted);
+      font-size: 15px;
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <div class="brand">MOLOTILO DIGITAL</div>
+    <h1>Поддержка TaskMail</h1>
+    <p class="lead">Как пользоваться расширением и что делать, если что-то не работает.</p>
+
+    <div class="card">
+      Не нашли ответа — напишите:
+      <a href="mailto:taskmail.support@molotilo.digital">taskmail.support@molotilo.digital</a>.
+      Отвечаем на русском и английском.
+    </div>
+
+    <h2>Как создать задачу из письма</h2>
+    <p>Есть три равнозначных способа — они делают одно и то же:</p>
+    <ul>
+      <li>навести курсор на письмо и нажать <kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>S</kbd>;</li>
+      <li>нажать на письме правой кнопкой и выбрать «Создать задачу»;</li>
+      <li>открыть список задач по значку расширения и нажать «Создать задачу из письма».</li>
+    </ul>
+    <p>
+      Если письма выделены галочками, берутся все выделенные — расширение спросит,
+      сделать отдельные задачи или одну общую.
+    </p>
+
+    <h2>Частые вопросы</h2>
+
+    <h3>В контекстном меню нет пункта «Создать задачу»</h3>
+    <p>
+      Gmail и Яндекс Почта показывают на письмах собственное меню и подавляют системное —
+      в такие моменты Chrome не рисует своё меню, и пункта не будет ни у одного расширения.
+      Пользуйтесь горячей клавишей <kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>S</kbd> или кнопкой
+      в списке задач. Системное меню появляется там, где почта его не перехватывает: на тексте
+      открытого письма, на пустом месте страницы, а также по <kbd>Shift</kbd> + правый клик.
+    </p>
+
+    <h3>Ничего не происходит сразу после установки</h3>
+    <p>
+      Обновите вкладку почты клавишей <kbd>F5</kbd>: скрипт разбора письма внедряется при
+      загрузке страницы, и во вкладках, открытых до установки, его ещё нет.
+    </p>
+
+    <h3>Не приходят напоминания</h3>
+    <ul>
+      <li>Проверьте, что уведомления разрешены в параметрах Windows и не включена
+        «Фокусировка внимания». Если система их глушит, расширение об этом не узнаёт —
+        задачи останутся в списке, а на значке появится счётчик.</li>
+      <li>Уведомления не приходят при полностью закрытом браузере: это ограничение
+        платформы. Всё, что наступило, показывается при следующем запуске Chrome одним
+        сводным уведомлением.</li>
+    </ul>
+
+    <h3>Горячая клавиша не срабатывает</h3>
+    <p>
+      Откройте <code>chrome://extensions/shortcuts</code> и проверьте, что за TaskMail
+      закреплена нужная комбинация. Иногда она занята браузером или другим расширением —
+      на этой же странице можно назначить любую свободную.
+    </p>
+
+    <h3>Задача открывает не тот почтовый ящик</h3>
+    <p>
+      Расширение запоминает ящик, в котором было создано письмо, и открывает ссылку именно
+      в нём — всегда новой вкладкой. Если ящик был добавлен позже или ссылка устарела,
+      воспользуйтесь кнопкой «Найти»: она ищет письма по адресу отправителя, включая
+      корзину и спам.
+    </p>
+
+    <h3>Тема или отправитель определились неверно</h3>
+    <p>
+      Почтовые сервисы меняют вёрстку, и разбор письма иногда промахивается. В этом случае
+      окно задачи показывает предупреждение — поля можно поправить руками перед сохранением.
+      Если промах повторяется, напишите нам: укажите сервис и что именно подставилось неверно.
+    </p>
+
+    <h3>Что с моими данными</h3>
+    <p>
+      Задачи хранятся в вашем браузере, расширение не делает сетевых запросов. Текст письма
+      не сохраняется без явного согласия. Подробности — в
+      <a href="privacy.html">политике конфиденциальности</a>.
+    </p>
+
+    <footer>
+      MOLOTILO DIGITAL · <a href="index.html">о расширении</a> ·
+      <a href="privacy.html">политика конфиденциальности</a> ·
+      <a href="mailto:taskmail.support@molotilo.digital">taskmail.support@molotilo.digital</a>
+    </footer>
+  </main>
+</body>
+</html>
