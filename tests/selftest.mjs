@@ -27,6 +27,8 @@ import {
   taskLink
 } from '../src/common/model.js';
 import { resolveUrl, searchUrl } from '../src/background/links.js';
+import { MAIL_HOSTS, MAIL_MATCH_PATTERNS, isMailUrl } from '../src/common/hosts.js';
+import { readFileSync } from 'node:fs';
 
 let passed = 0;
 const check = (name, fn) => {
@@ -213,6 +215,38 @@ check('Яндекс: uid добавляется к задаче, сохранё�
 check('без отправителя остаётся ссылка, собранная при захвате письма', () => {
   const task = makeTask({ serviceId: 'gmail', searchLink: 'https://mail.google.com/#search/x' });
   assert.equal(searchUrl(task), 'https://mail.google.com/#search/x');
+});
+
+/* ------------------------------- Хосты ----------------------------------- */
+
+// manifest.json — статичный JSON и импортировать hosts.js не может, поэтому
+// расхождение ловим тестом: именно на нём мы уже теряли работоспособность
+// в Яндекс 360 (mail360.yandex.ru вместо mail.360.yandex.ru).
+const manifest = JSON.parse(readFileSync(new URL('../manifest.json', import.meta.url), 'utf8'));
+
+check('manifest: host_permissions совпадает с общим списком', () => {
+  assert.deepEqual([...manifest.host_permissions].sort(), [...MAIL_MATCH_PATTERNS].sort());
+});
+
+check('manifest: content_scripts.matches совпадает с общим списком', () => {
+  assert.equal(manifest.content_scripts.length, 1);
+  assert.deepEqual([...manifest.content_scripts[0].matches].sort(), [...MAIL_MATCH_PATTERNS].sort());
+});
+
+check('распознавание почтовой вкладки', () => {
+  assert.ok(isMailUrl('https://mail.360.yandex.ru/?uid=113#/message/1'));
+  assert.ok(isMailUrl('https://mail.google.com/mail/u/0/#inbox'));
+  assert.ok(!isMailUrl('https://mail360.yandex.ru/'), 'хост без точки — не наш');
+  assert.ok(!isMailUrl('https://example.com/mail.google.com'));
+  assert.ok(!isMailUrl('не ссылка'));
+  assert.ok(!isMailUrl(undefined));
+});
+
+check('в списке нет дублей и все хосты выглядят хостами', () => {
+  assert.equal(new Set(MAIL_HOSTS).size, MAIL_HOSTS.length);
+  for (const host of MAIL_HOSTS) {
+    assert.ok(/^[a-z0-9.-]+\.[a-z]{2,}$/.test(host), `подозрительный хост: ${host}`);
+  }
 });
 
 console.log(`ok: ${passed} проверок`);

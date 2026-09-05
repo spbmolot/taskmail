@@ -13,6 +13,7 @@ import {
   findDuplicates
 } from '../common/store.js';
 import { getSettings, setSettings } from '../common/settings.js';
+import { MAIL_MATCH_PATTERNS, isMailUrl } from '../common/hosts.js';
 import { defaultReminder } from '../common/datetime.js';
 import { runMigrations } from './migrate.js';
 import { buildDrafts, collectFromTab } from './collect.js';
@@ -37,18 +38,6 @@ import { syncNow, watchRemoteChanges } from './sync.js';
 
 const MENU_ROOT = 'taskmail-create';
 const EDITOR_PATH = 'src/editor/editor.html';
-// Список обязан совпадать с host_permissions и content_scripts в manifest.json.
-const MAIL_PATTERNS = [
-  'https://mail.google.com/*',
-  'https://mail.yandex.ru/*',
-  'https://mail.yandex.com/*',
-  'https://mail.yandex.by/*',
-  'https://mail.yandex.kz/*',
-  'https://mail.360.yandex.ru/*',
-  'https://mail.360.yandex.com/*',
-  'https://360.yandex.ru/*',
-  'https://e.mail.ru/*'
-];
 
 /* ------------------------------ Контекстное меню --------------------------- */
 
@@ -63,7 +52,7 @@ function createMenus() {
       id: MENU_ROOT,
       title: 'Создать задачу',
       contexts: ['page', 'selection', 'link'],
-      documentUrlPatterns: MAIL_PATTERNS
+      documentUrlPatterns: MAIL_MATCH_PATTERNS
     });
     // Ошибку «duplicate id» гасим здесь же — меню всегда пересоздаётся с нуля.
     void chrome.runtime.lastError;
@@ -78,11 +67,7 @@ function createMenus() {
 async function createFromTab(tab, info = {}) {
   if (!tab || tab.id === undefined) return { ok: false, error: 'нет активной вкладки' };
 
-  const isMail = MAIL_PATTERNS.some((pattern) => {
-    const host = pattern.replace('https://', '').replace('/*', '');
-    return (tab.url || '').startsWith(`https://${host}/`);
-  });
-  if (!isMail) {
+  if (!isMailUrl(tab.url)) {
     return { ok: false, error: 'откройте вкладку Gmail или Яндекс Почты' };
   }
 

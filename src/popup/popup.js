@@ -9,6 +9,7 @@ import {
   taskLink
 } from '../common/model.js';
 import { formatRelative, formatWhen, sectionOf } from '../common/datetime.js';
+import { isMailHost } from '../common/hosts.js';
 
 const $ = (id) => document.getElementById(id);
 
@@ -522,17 +523,6 @@ $('newButton').addEventListener('click', async () => {
  * гасят системное — пункт расширения туда не попадает. Поэтому, когда открыта
  * вкладка почты, тот же сценарий доступен кнопкой отсюда и горячей клавишей.
  */
-const MAIL_HOSTS = [
-  'mail.google.com',
-  'mail.yandex.ru',
-  'mail.yandex.com',
-  'mail.yandex.by',
-  'mail.yandex.kz',
-  'mail.360.yandex.ru',
-  'mail.360.yandex.com',
-  '360.yandex.ru',
-  'e.mail.ru'
-];
 
 async function setupMailButton() {
   if (asTab || !chrome.tabs) return;
@@ -545,7 +535,7 @@ async function setupMailButton() {
   } catch (error) {
     return;
   }
-  if (!MAIL_HOSTS.includes(host)) return;
+  if (!isMailHost(host)) return;
 
   const shortcuts = await chrome.commands.getAll().catch(() => []);
   const hotkey = (shortcuts.find((item) => item.name === 'create-task') || {}).shortcut;
