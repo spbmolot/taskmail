@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <title>Рекламное изображение</title>
+  <style>
+    /*
+     * Рекомендации Chrome Web Store к рекламным изображениям: холст заполнен
+     * целиком, без прозрачности и скруглений, текста минимум — плитка 440×280
+     * показывается мелко, и длинную фразу на ней не прочитать.
+     */
+    /* Без border-box паддинги прибавляются к заданной ширине холста, и всё
+       содержимое уезжает вправо за пределы кадра. */
+    *, *::before, *::after { box-sizing: border-box; }
+
+    html, body { margin: 0; overflow: hidden; }
+
+    body {
+      display: flex;
+      align-items: center;
+      color: #fff;
+      font-family: -apple-system, 'Segoe UI', Roboto, Arial, sans-serif;
+      background: radial-gradient(120% 140% at 12% 8%, #6d64ff 0%, #4f46e5 45%, #3a32b8 100%);
+    }
+
+    /* Мягкое свечение, чтобы плашка не выглядела плоской заливкой. */
+    body::after {
+      content: '';
+      position: absolute;
+      right: -12%;
+      top: -35%;
+      width: 70%;
+      height: 150%;
+      background: radial-gradient(circle, rgba(255, 255, 255, 0.16) 0%, rgba(255, 255, 255, 0) 62%);
+      pointer-events: none;
+    }
+
+    .mark {
+      display: grid;
+      place-items: center;
+      background: #fff;
+      flex: none;
+    }
+
+    .mark svg { display: block; }
+
+    h1 { margin: 0; font-weight: 680; letter-spacing: -0.02em; line-height: 1; }
+    p { margin: 0; color: rgba(255, 255, 255, 0.86); line-height: 1.35; }
+
+    .brand {
+      color: rgba(255, 255, 255, 0.6);
+      font-weight: 600;
+      letter-spacing: 0.14em;
+    }
+
+    /* Плитка 440×280: только знак, название и короткая строка. */
+    body.small { flex-direction: column; justify-content: center; gap: 0; padding: 30px 36px; }
+    body.small .text { display: flex; flex-direction: column; align-items: center; }
+    body.small .mark { width: 72px; height: 72px; border-radius: 20px; margin-bottom: 20px; }
+    body.small .mark svg { width: 42px; height: 42px; }
+    body.small h1 { font-size: 44px; }
+    body.small p { font-size: 18px; margin-top: 11px; text-align: center; }
+    body.small .brand { font-size: 11px; margin-top: 16px; }
+
+    /* Марки 1400×560: слева обещание, справа настоящий интерфейс. */
+    body.wide { padding: 0 0 0 96px; gap: 60px; }
+    body.wide .text { flex: none; width: 620px; position: relative; z-index: 1; }
+    body.wide .mark { width: 96px; height: 96px; border-radius: 27px; margin-bottom: 32px; }
+    body.wide .mark svg { width: 56px; height: 56px; }
+    body.wide h1 { font-size: 76px; }
+    body.wide p { font-size: 27px; margin-top: 20px; max-width: 560px; }
+    body.wide .brand { font-size: 14px; margin-top: 36px; }
+
+    .shot {
+      position: relative;
+      z-index: 1;
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 40px 90px rgba(12, 10, 40, 0.45);
+      flex: none;
+      background: #fff;
+    }
+
+    .shot iframe { display: block; border: 0; }
+  </style>
+</head>
+<body>
+  <div class="text">
+    <div class="mark">
+      <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect x="2.5" y="5" width="19" height="14" rx="2.5" fill="#4f46e5"/>
+        <path d="M4.5 7.5 12 13.5l7.5-6" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        <circle cx="18.5" cy="17" r="5" fill="#34d399" stroke="#fff" stroke-width="1.6"/>
+        <path d="m16.4 17.1 1.5 1.5 3-3.2" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </div>
+    <h1>TaskMail</h1>
+    <p id="tagline"></p>
+    <div class="brand">MOLOTILO DIGITAL</div>
+  </div>
+
+  <div class="shot" id="shot" hidden>
+    <iframe id="frame" src="../src/popup/popup.html" width="380" height="440" title="Список задач"></iframe>
+  </div>
+
+  <script>
+    const params = new URLSearchParams(location.search);
+    const wide = params.get('size') === 'wide';
+
+    document.body.className = wide ? 'wide' : 'small';
+    document.documentElement.style.width = document.body.style.width = wide ? '1400px' : '440px';
+    document.documentElement.style.height = document.body.style.height = wide ? '560px' : '280px';
+
+    document.getElementById('tagline').textContent = wide
+      ? 'Письмо из Gmail или Яндекс Почты — в задачу с напоминанием. За три клика.'
+      : 'Задачи из писем с напоминанием';
+
+    if (wide) document.getElementById('shot').hidden = false;
+  </script>
+</body>
+</html>

@@ -29,6 +29,7 @@ New-Item -ItemType Directory -Force $build, $out | Out-Null
 # Светлая копия интерфейса.
 Copy-Item 'src' (Join-Path $build 'src') -Recurse
 Copy-Item 'tools\screenshots\shot.html' $build
+Copy-Item 'tools\screenshots\promo.html' $build
 Copy-Item 'tools\screenshots\mock.js' (Join-Path $build 'src\mock.js')
 
 # Тёмная копия: медиазапрос превращается в обычные правила, поэтому палитра
@@ -112,11 +113,63 @@ try {
     if ($size -ne '1280x800') { throw "$($shot.file): размер $size вместо 1280x800" }
     Write-Host "  $($shot.file)  $size"
   }
+
+# Рекламные изображения. Магазин требует JPEG или 24-битный PNG без альфа-канала,
+# а Chrome снимает с прозрачностью, поэтому каждый кадр пересохраняется.
+$promos = @(
+  @{ file = 'promo-440x280.png'; size = 'small'; width = 440; height = 280 },
+  @{ file = 'promo-1400x560.png'; size = 'wide'; width = 1400; height = 560 }
+)
+
+Add-Type -AssemblyName System.Drawing
+
+foreach ($promo in $promos) {
+  $target = Join-Path $out $promo.file
+  $log = Join-Path $env:TEMP 'taskmail-promo.log'
+  Start-Process $chrome -NoNewWindow -Wait -RedirectStandardError $log -ArgumentList @(
+    '--headless=new', '--disable-gpu', '--hide-scrollbars',
+    '--virtual-time-budget=3000', "--window-size=$($promo.width),$($promo.height)",
+    "--screenshot=$target", "http://localhost:8940/promo.html?size=$($promo.size)"
+  )
+
+  if (-not (Test-Path $target)) { throw "Изображение не создано: $($promo.file)" }
+
+  # Перерисовываем на непрозрачный холст: 32bppArgb -> 24bppRgb.
+  $source = New-Object System.Drawing.Bitmap $target
+  $flat = New-Object System.Drawing.Bitmap $source.Width, $source.Height, ([System.Drawing.Imaging.PixelFormat]::Format24bppRgb)
+  $canvas = [System.Drawing.Graphics]::FromImage($flat)
+  $canvas.Clear([System.Drawing.Color]::White)
+  $canvas.DrawImage($source, 0, 0, $source.Width, $source.Height)
+  $canvas.Dispose()
+  $source.Dispose()
+
+  $flatPath = Join-Path $out ("flat-" + $promo.file)
+  $flat.Save($flatPath, [System.Drawing.Imaging.ImageFormat]::Png)
+  $size = "$($flat.Width)x$($flat.Height)"
+  $format = $flat.PixelFormat
+  $flat.Dispose()
+
+  Move-Item $flatPath $target -Force
+
+  # Белый левый верхний угол означает, что снялась не наша страница,
+  # а, например, экран "не удаётся получить доступ к сайту".
+  $probe = New-Object System.Drawing.Bitmap $target
+  $corner = $probe.GetPixel(8, 8)
+  $probe.Dispose()
+  if ($corner.R -gt 200 -and $corner.G -gt 200 -and $corner.B -gt 200) {
+    throw "$($promo.file): фон белый — снялась не страница промо"
+  }
+
+  if ($size -ne "$($promo.width)x$($promo.height)") { throw "$($promo.file): размер $size" }
+  if ("$format" -ne 'Format24bppRgb') { throw "$($promo.file): формат $format, нужен 24-битный без альфы" }
+  Write-Host "  $($promo.file)  $size  $format"
+}
 } finally {
   Stop-Process -Id $server.Id -Force -ErrorAction SilentlyContinue
   Get-CimInstance Win32_Process -Filter "Name like '%python%'" |
     Where-Object { $_.CommandLine -like '*http.server 8940*' } |
     ForEach-Object { Stop-Process -Id $_.ProcessId -Force -ErrorAction SilentlyContinue }
 }
+
 
 Write-Host "`nГотово: dist/screenshots" -ForegroundColor Green
