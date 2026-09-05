@@ -11,7 +11,7 @@ import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 
 const here = dirname(fileURLToPath(import.meta.url));
-const suites = ['selftest.mjs', 'reminders.mjs', 'sync.mjs'];
+const suites = ['selftest.mjs', 'boot.mjs', 'reminders.mjs', 'sync.mjs'];
 
 let failed = 0;
 for (const suite of suites) {

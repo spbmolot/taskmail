@@ -39,6 +39,18 @@ function area(map) {
   };
 }
 
+/** Событие chrome.*: запоминает подписчиков, чтобы тест мог их вызвать. */
+function event(registry, name) {
+  return {
+    addListener(fn) {
+      registry.set(name, [...(registry.get(name) || []), fn]);
+    },
+    hasListener(fn) {
+      return (registry.get(name) || []).includes(fn);
+    }
+  };
+}
+
 /** Ставит свежий мок и возвращает доступ к его внутренностям. */
 export function installChromeMock({ permissionLevel = 'granted' } = {}) {
   const local = new Map();
@@ -48,6 +60,10 @@ export function installChromeMock({ permissionLevel = 'granted' } = {}) {
   const notifications = [];
   const badge = { text: '', title: '', color: '' };
   const state = { permissionLevel };
+  const listeners = new Map();
+  const menus = new Map();
+  const windows = [];
+  const tabs = [];
 
   // Вызывается перед каждым показом уведомления — тестам это нужно, чтобы
   // заглянуть в хранилище ровно в момент показа.
@@ -58,9 +74,10 @@ export function installChromeMock({ permissionLevel = 'granted' } = {}) {
       local: area(local),
       sync: area(sync),
       session: area(session),
-      onChanged: { addListener() {} }
+      onChanged: event(listeners, 'storage.onChanged')
     },
     alarms: {
+      onAlarm: event(listeners, 'alarms.onAlarm'),
       create(name, info) {
         alarms.set(name, { name, ...info });
       },
@@ -75,6 +92,9 @@ export function installChromeMock({ permissionLevel = 'granted' } = {}) {
       }
     },
     notifications: {
+      onClicked: event(listeners, 'notifications.onClicked'),
+      onButtonClicked: event(listeners, 'notifications.onButtonClicked'),
+      onClosed: event(listeners, 'notifications.onClosed'),
       create(id, options, callback) {
         if (hooks.beforeNotify) hooks.beforeNotify(id, options);
         notifications.push({ id, options });
@@ -100,7 +120,58 @@ export function installChromeMock({ permissionLevel = 'granted' } = {}) {
     },
     runtime: {
       lastError: undefined,
-      getURL: (path) => `chrome-extension://test/${path}`
+      getURL: (path) => `chrome-extension://test/${path}`,
+      onInstalled: event(listeners, 'runtime.onInstalled'),
+      onStartup: event(listeners, 'runtime.onStartup'),
+      onMessage: event(listeners, 'runtime.onMessage')
+    },
+    contextMenus: {
+      onClicked: event(listeners, 'contextMenus.onClicked'),
+      create(item) {
+        menus.set(item.id, item);
+      },
+      removeAll(callback) {
+        menus.clear();
+        if (callback) callback();
+      }
+    },
+    commands: {
+      onCommand: event(listeners, 'commands.onCommand'),
+      async getAll() {
+        return [{ name: 'create-task', shortcut: 'Ctrl+Shift+S' }];
+      }
+    },
+    windows: {
+      async create(options) {
+        windows.push(options);
+        return { id: windows.length, ...options };
+      },
+      async getCurrent() {
+        return { id: 1, left: 0, top: 0, width: 1280 };
+      },
+      async update(id, options) {
+        return { id, ...options };
+      }
+    },
+    tabs: {
+      async query() {
+        return tabs;
+      },
+      async create(options) {
+        tabs.push(options);
+        return { id: tabs.length, ...options };
+      },
+      async update(id, options) {
+        return { id, ...options };
+      },
+      async sendMessage() {
+        return null;
+      }
+    },
+    scripting: {
+      async executeScript() {
+        return [];
+      }
     }
   };
 
@@ -108,6 +179,14 @@ export function installChromeMock({ permissionLevel = 'granted' } = {}) {
 
   return {
     chrome,
+    listeners,
+    menus,
+    windows,
+    tabs,
+    /** Вызывает подписчиков события так же, как это сделал бы Chrome. */
+    fire(name, ...args) {
+      return (listeners.get(name) || []).map((fn) => fn(...args));
+    },
     local,
     sync,
     session,
