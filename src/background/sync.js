@@ -67,7 +67,7 @@ function selectForSync(tasks) {
   return { selected, skipped };
 }
 
-export async function isEnabled() {
+async function isEnabled() {
   const settings = await getSettings();
   return Boolean(settings.syncEnabled);
 }

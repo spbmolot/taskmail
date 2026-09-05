@@ -7,7 +7,6 @@ import assert from 'node:assert';
 import {
   addDays,
   defaultReminder,
-  duePresets,
   formatRelative,
   formatWhen,
   joinLocal,
@@ -126,10 +125,9 @@ check('отправитель деградирует без данных', () =>
   assert.equal(displaySender(makeTask({ senderName: 'Иван', senderEmail: 'a@b.c' })), 'Иван · a@b.c');
 });
 
-check('быстрые сроки дают корректные даты', () => {
-  for (const preset of duePresets('09:00')) {
-    assert.ok(parseLocalStr(joinLocal(preset.date, preset.time)) > 0);
-  }
+check('разбор и сборка локального времени', () => {
+  assert.equal(parseLocalStr(joinLocal('2026-01-02', '03:04')), parseLocalStr('2026-01-02T03:04'));
+  assert.equal(joinLocal('2026-01-02', ''), '2026-01-02T09:00', 'без времени подставляется утро');
   assert.equal(splitLocal('2026-01-02T03:04').time, '03:04');
   assert.equal(toDateStr(new Date(addDays(Date.now(), 1))).length, 10);
 });

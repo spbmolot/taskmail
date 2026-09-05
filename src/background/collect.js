@@ -110,18 +110,18 @@ function combine(entries, payload, settings) {
 }
 
 /**
- * Черновик для окна задачи.
- * mode: 'single' — одно письмо; 'choose' — выделено несколько и нужно решение
- * пользователя; 'separate' / 'combined' — решение уже принято через подменю.
+ * Черновик для окна задачи: 'single' — одно письмо, 'choose' — выделено
+ * несколько и выбор «отдельные задачи или одна общая» делает пользователь
+ * в окне задачи.
  */
-export async function buildDrafts(rawPayload, { mode, info, tab, settings }) {
+export async function buildDrafts(rawPayload, { info, tab, settings }) {
   const payload = rawPayload && rawPayload.selection && rawPayload.selection.length
     ? rawPayload
     : fromTabFallback(tab, info);
 
   const entries = payload.selection;
   const many = entries.length > 1;
-  const resolvedMode = many ? (mode === 'auto' ? 'choose' : mode) : 'single';
+  const resolvedMode = many ? 'choose' : 'single';
 
   const separate = entries.map((entry) => toTask(entry, payload, settings));
   const combined = many ? combine(entries, payload, settings) : separate[0];
@@ -154,7 +154,6 @@ export async function buildDrafts(rawPayload, { mode, info, tab, settings }) {
     mode: resolvedMode,
     serviceLabel: serviceLabel(payload.serviceId),
     partial: entries.some((entry) => entry.partial),
-    context: payload.mode || 'unknown',
     // Выделенный текст письма НЕ сохраняется автоматически: пользователь должен
     // явно согласиться прикрепить его к задаче (или включить это в настройках).
     excerpt: info && info.selectionText ? info.selectionText.slice(0, 1000) : '',

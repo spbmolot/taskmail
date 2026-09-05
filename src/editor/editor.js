@@ -1,4 +1,4 @@
-import { makeTask, serviceLabel, taskLink } from '../common/model.js';
+import { LETTERS, makeTask, plural, serviceLabel, taskLink } from '../common/model.js';
 import {
   addDays,
   formatWhen,
@@ -207,12 +207,9 @@ function updateWhenHint() {
 
 /* --------------------------- Несколько выделенных -------------------------- */
 
-function renderLetters() {
+function renderLetters(source) {
   const list = $('letters');
   list.replaceChildren();
-  const source = state.choice === 'combined' && state.combined && state.combined.items
-    ? state.combined.items
-    : state.tasks;
 
   for (const item of source) {
     const li = document.createElement('li');
@@ -225,6 +222,20 @@ function renderLetters() {
     li.append(subject, from);
     list.append(li);
   }
+}
+
+/**
+ * Задача собрана из нескольких писем — показываем её состав. Переключатель
+ * режима здесь скрыт: выбор сделан при создании, а менять его задним числом
+ * значило бы разбирать задачу на несколько — это отдельная операция.
+ */
+function showTaskLetters(task) {
+  if (!task.items || !task.items.length) return;
+
+  $('modeField').hidden = false;
+  $('modeSwitch').hidden = true;
+  $('lettersLabel').textContent = `В задаче ${plural(task.items.length, LETTERS)}`;
+  renderLetters(task.items);
 }
 
 function applyChoice(choice) {
@@ -245,7 +256,7 @@ function applyChoice(choice) {
     $('subject').value = state.combined.subject || '';
     $('link').value = taskLink(state.combined) || '';
   }
-  renderLetters();
+  renderLetters(combined && state.combined.items ? state.combined.items : state.tasks);
 }
 
 /* -------------------------------- Инициализация ---------------------------- */
@@ -265,13 +276,14 @@ async function init() {
       $('save').textContent = 'Сохранить';
       showContext(task);
       fillForm(task);
+      showTaskLetters(task);
       if (task.excerpt) {
         $('excerptField').hidden = false;
         $('excerptToggle').checked = true;
         $('excerptPreview').textContent = task.excerpt;
         state.excerpt = task.excerpt;
       }
-      $('subject').focus();
+      $('subject').focus({ preventScroll: true });
       return;
     }
   }
@@ -283,7 +295,7 @@ async function init() {
   if (!draft) {
     state.base = makeTask({ priority: state.settings.defaultPriority || 'normal' });
     fillForm(state.base);
-    $('subject').focus();
+    $('subject').focus({ preventScroll: true });
     return;
   }
 
@@ -312,7 +324,7 @@ async function init() {
   }
 
   renderBanners();
-  $('subject').focus();
+  $('subject').focus({ preventScroll: true });
 }
 
 function showContext(task, draft) {

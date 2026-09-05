@@ -9,7 +9,7 @@
 import { SCHEMA_VERSION, makeTask, dedupeKey, softKey } from './model.js';
 
 export const TASKS_KEY = 'tasks';
-export const TOMBSTONES_KEY = 'tombstones';
+const TOMBSTONES_KEY = 'tombstones';
 const META_KEY = 'meta';
 const TOMBSTONE_TTL = 30 * 24 * 60 * 60 * 1000;
 
@@ -89,22 +89,6 @@ export function removeTask(id) {
       [TOMBSTONES_KEY]: prune(tombstones)
     });
     return true;
-  });
-}
-
-export function removeTasks(ids) {
-  return transaction(async () => {
-    const set = new Set(ids);
-    const tasks = await getTasks();
-    const next = tasks.filter((task) => !set.has(task.id));
-    const tombstones = await getTombstones();
-    const now = Date.now();
-    for (const id of set) tombstones[id] = now;
-    await chrome.storage.local.set({
-      [TASKS_KEY]: next,
-      [TOMBSTONES_KEY]: prune(tombstones)
-    });
-    return tasks.length - next.length;
   });
 }
 

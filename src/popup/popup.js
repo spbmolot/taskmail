@@ -161,6 +161,16 @@ function metaNode(task) {
     meta.append(tag);
   }
 
+  // Напоминание наступило, пока браузер был закрыт: пометка объясняет, почему
+  // задача уже просрочена, хотя уведомления пользователь не видел.
+  if (task.missed && !task.done) {
+    const tag = document.createElement('span');
+    tag.className = 'tag stale';
+    tag.textContent = 'пропущено';
+    tag.title = 'Срок наступил, пока Chrome был закрыт';
+    meta.append(tag);
+  }
+
   if (task.items && task.items.length) {
     const tag = document.createElement('span');
     tag.className = 'tag';

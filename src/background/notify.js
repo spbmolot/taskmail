@@ -9,7 +9,7 @@ import { displaySender, displaySubject, priorityInfo, serviceLabel } from '../co
 import { formatWhen } from '../common/datetime.js';
 import { getMeta, setMeta } from '../common/store.js';
 
-export const TASK_NOTIFICATION = 'taskmail:task:';
+const TASK_NOTIFICATION = 'taskmail:task:';
 export const MISSED_NOTIFICATION = 'taskmail:missed';
 
 const ICON = chrome.runtime.getURL('icons/icon128.png');

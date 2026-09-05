@@ -2,13 +2,11 @@
 
 export const SCHEMA_VERSION = 2;
 
-export const PRIORITIES = [
+const PRIORITIES = [
   { id: 'high', label: 'Высокий', short: 'Высокий', order: 0 },
   { id: 'normal', label: 'Обычный', short: 'Обычный', order: 1 },
   { id: 'low', label: 'Низкий', short: 'Низкий', order: 2 }
 ];
-
-export const PRIORITY_IDS = PRIORITIES.map((item) => item.id);
 
 export function priorityInfo(id) {
   return PRIORITIES.find((item) => item.id === id) || PRIORITIES[1];
@@ -25,7 +23,7 @@ export function serviceLabel(id) {
   return (SERVICES[id] || SERVICES.other).label;
 }
 
-export function newId() {
+function newId() {
   return `t_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 8)}`;
 }
 
@@ -49,7 +47,6 @@ export function makeTask(fields = {}) {
     threadLink: '',
     searchLink: '',
     useThreadLink: false,
-    linkChecked: 0,
 
     // Пользовательские поля
     comment: '',
@@ -70,7 +67,6 @@ export function makeTask(fields = {}) {
     updatedAt: now,
     completedAt: null,
     lastNotifiedAt: null,
-    snoozeCount: 0,
     ...fields
   };
 }
@@ -90,7 +86,7 @@ export function taskLink(task) {
   return task.messageLink || task.threadLink || task.searchLink || '';
 }
 
-export function accountKey(task) {
+function accountKey(task) {
   return `${task.serviceId}|${(task.accountEmail || task.accountId || '').toLowerCase()}`;
 }
 
@@ -124,7 +120,7 @@ export function normalizeSubject(subject) {
     .trim();
 }
 
-export function normalizeLink(link) {
+function normalizeLink(link) {
   if (!link) return '';
   try {
     const url = new URL(link);

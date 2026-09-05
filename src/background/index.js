@@ -7,10 +7,8 @@ import {
   getTasks,
   patchTask,
   removeTask,
-  removeTasks,
   saveTask,
-  setMeta,
-  findDuplicates
+  setMeta
 } from '../common/store.js';
 import { getSettings, setSettings } from '../common/settings.js';
 import { MAIL_MATCH_PATTERNS, isMailUrl } from '../common/hosts.js';
@@ -78,7 +76,7 @@ async function createFromTab(tab, info = {}) {
   }
 
   const settings = await getSettings();
-  const draft = await buildDrafts(payload, { mode: 'auto', info, tab, settings });
+  const draft = await buildDrafts(payload, { info, tab, settings });
 
   const draftId = `draft_${Date.now().toString(36)}`;
   await chrome.storage.session.set({ [draftId]: draft });
@@ -165,10 +163,7 @@ async function completeTask(id, done) {
 async function snooze(id, minutes) {
   const settings = await getSettings();
   const delay = minutes || settings.snoozeMinutes;
-  const task = await patchTask(id, (current) => ({
-    ...snoozeTimes(delay),
-    snoozeCount: (current.snoozeCount || 0) + 1
-  }));
+  const task = await patchTask(id, snoozeTimes(delay));
   await clearUndelivered(id);
   await refreshSchedule();
   syncNow();
@@ -294,10 +289,6 @@ const handlers = {
     return { ok: true };
   },
 
-  async DUPLICATE_CHECK({ candidate, excludeId }) {
-    return { duplicates: await findDuplicates(candidate, excludeId) };
-  },
-
   async TASK_SAVE({ task, draftId }) {
     const saved = await persist(task);
     await dropDraft(draftId);
@@ -309,13 +300,6 @@ const handlers = {
     for (const task of tasks) saved.push(await persist(task));
     await dropDraft(draftId);
     return { tasks: saved };
-  },
-
-  async TASK_PATCH({ id, patch }) {
-    const task = await patchTask(id, patch);
-    await reschedule(task);
-    syncNow();
-    return { task };
   },
 
   async TASK_TOGGLE({ id, done }) {
@@ -331,13 +315,6 @@ const handlers = {
     await refreshSchedule();
     syncNow();
     return { ok: true };
-  },
-
-  async TASKS_DELETE({ ids }) {
-    const count = await removeTasks(ids);
-    await refreshSchedule();
-    syncNow();
-    return { count };
   },
 
   async TASK_OPEN({ id, fallback }) {

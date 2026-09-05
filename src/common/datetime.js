@@ -10,7 +10,7 @@ export function toDateStr(date) {
   return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
 }
 
-export function toTimeStr(date) {
+function toTimeStr(date) {
   return `${pad(date.getHours())}:${pad(date.getMinutes())}`;
 }
 
@@ -47,13 +47,13 @@ export function joinLocal(date, time) {
   return `${date}T${time || '09:00'}`;
 }
 
-export function startOfDay(timestamp = Date.now()) {
+function startOfDay(timestamp = Date.now()) {
   const date = new Date(timestamp);
   date.setHours(0, 0, 0, 0);
   return date.getTime();
 }
 
-export function endOfDay(timestamp = Date.now()) {
+function endOfDay(timestamp = Date.now()) {
   const date = new Date(timestamp);
   date.setHours(23, 59, 59, 999);
   return date.getTime();
@@ -63,22 +63,6 @@ export function addDays(timestamp, days) {
   const date = new Date(timestamp);
   date.setDate(date.getDate() + days);
   return date.getTime();
-}
-
-export function isToday(timestamp) {
-  return timestamp !== null && timestamp >= startOfDay() && timestamp <= endOfDay();
-}
-
-/** Быстрые сроки для чипов: Сегодня / Завтра / Через неделю. */
-export function duePresets(defaultTime = '09:00') {
-  const today = new Date();
-  const tomorrow = new Date(addDays(Date.now(), 1));
-  const week = new Date(addDays(Date.now(), 7));
-  return [
-    { id: 'today', label: 'Сегодня', date: toDateStr(today), time: defaultTime },
-    { id: 'tomorrow', label: 'Завтра', date: toDateStr(tomorrow), time: defaultTime },
-    { id: 'week', label: 'Через неделю', date: toDateStr(week), time: defaultTime }
-  ];
 }
 
 /**

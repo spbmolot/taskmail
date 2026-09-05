@@ -36,7 +36,7 @@ export function computeTimes(task) {
   };
 }
 
-export function isPending(task) {
+function isPending(task) {
   return !task.done && Boolean(task.remindAt);
 }
 

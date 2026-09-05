@@ -2,7 +2,7 @@
 
 const KEY = 'settings';
 
-export const DEFAULT_SETTINGS = {
+const DEFAULT_SETTINGS = {
   defaultReminderTime: '09:00',
   defaultPriority: 'normal',
   snoozeMinutes: 15,
