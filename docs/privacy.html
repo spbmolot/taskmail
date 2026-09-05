@@ -1,0 +1,204 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Политика конфиденциальности — TaskMail</title>
+  <meta name="description" content="TaskMail не отправляет данные наружу: задачи из писем хранятся в браузере пользователя.">
+  <style>
+    :root {
+      color-scheme: light dark;
+      --bg: #ffffff;
+      --surface: #f6f7f9;
+      --line: #e4e6ea;
+      --text: #16181d;
+      --muted: #545a66;
+      --accent: #4f46e5;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #16181c;
+        --surface: #1f2228;
+        --line: #2e333b;
+        --text: #e8eaee;
+        --muted: #b3b9c4;
+        --accent: #7c7cff;
+      }
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      padding: 48px 20px 80px;
+      font: 17px/1.65 -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+      color: var(--text);
+      background: var(--bg);
+    }
+
+    main { max-width: 720px; margin: 0 auto; }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 14px;
+      color: var(--muted);
+      margin-bottom: 12px;
+    }
+
+    .badge i {
+      width: 26px;
+      height: 26px;
+      border-radius: 8px;
+      background: var(--accent);
+      display: inline-block;
+    }
+
+    h1 { font-size: 34px; line-height: 1.2; margin: 0 0 6px; letter-spacing: -0.02em; }
+    h2 { font-size: 21px; margin: 40px 0 12px; }
+    p, li { color: var(--text); }
+    .date { color: var(--muted); font-size: 15px; margin: 0 0 36px; }
+
+    .lead {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 18px 20px;
+      margin: 0 0 8px;
+    }
+
+    table { border-collapse: collapse; width: 100%; margin: 12px 0; font-size: 16px; }
+    th, td { text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--line); vertical-align: top; }
+    th { color: var(--muted); font-weight: 600; width: 34%; }
+
+    code {
+      font: 15px/1.4 ui-monospace, "Cascadia Mono", Consolas, monospace;
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 5px;
+      padding: 1px 6px;
+    }
+
+    a { color: var(--accent); }
+    ul { padding-left: 22px; }
+    li { margin: 6px 0; }
+
+    footer {
+      margin-top: 48px;
+      padding-top: 20px;
+      border-top: 1px solid var(--line);
+      color: var(--muted);
+      font-size: 15px;
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <div class="badge"><i></i> TaskMail — расширение Chrome</div>
+    <h1>Политика конфиденциальности</h1>
+    <p class="date">Дата последнего изменения: 5 сентября 2026 года</p>
+
+    <p class="lead">
+      TaskMail не отправляет никаких данных наружу. У расширения нет ни одного сетевого
+      запроса, нет сервера, нет аналитики и нет сторонних библиотек. Всё, что вы создаёте,
+      остаётся в вашем браузере.
+    </p>
+
+    <h2>Какие данные обрабатываются</h2>
+    <p>Когда вы создаёте задачу из письма, расширение сохраняет:</p>
+    <ul>
+      <li>тему письма;</li>
+      <li>имя и адрес отправителя;</li>
+      <li>ссылку на письмо и на переписку;</li>
+      <li>название почтового сервиса и идентификатор ящика (для Gmail — адрес,
+        для Яндекса — числовой <code>uid</code>), чтобы открыть письмо в нужном аккаунте;</li>
+      <li>ваш комментарий, срок, время напоминания и приоритет;</li>
+      <li>дату создания и изменения задачи.</li>
+    </ul>
+    <p>
+      <strong>Текст письма не сохраняется.</strong> Исключение одно: если вы выделили
+      фрагмент и явно поставили галочку «Прикрепить выделенный фрагмент письма» в окне
+      задачи. Такой фрагмент хранится только на этом компьютере и никогда не участвует в
+      синхронизации — он вычищается из данных перед отправкой.
+    </p>
+
+    <h2>Где данные хранятся</h2>
+    <p>
+      Основное хранилище — <code>chrome.storage.local</code>, то есть локальный профиль
+      браузера. Расширение полностью работоспособно без интернета.
+    </p>
+    <p>
+      Если вы включите в настройках «Синхронизировать между устройствами», задачи
+      дополнительно попадут в <code>chrome.storage.sync</code> — механизм синхронизации
+      самого Chrome, привязанный к вашему аккаунту Google. Данные передаются между вашими
+      устройствами инфраструктурой Google по правилам Google; разработчик расширения к ним
+      доступа не имеет. Настройка выключена по умолчанию.
+    </p>
+
+    <h2>Чего расширение не делает</h2>
+    <ul>
+      <li>Не читает содержимое писем и не отправляет его куда-либо.</li>
+      <li>Не собирает историю просмотров: разрешение <code>tabs</code> не запрашивается,
+        адрес вкладки виден только для почтовых сайтов из списка ниже.</li>
+      <li>Не показывает рекламу, не профилирует и не передаёт данные третьим лицам.</li>
+      <li>Не продаёт данные — их просто некуда передавать.</li>
+    </ul>
+
+    <h2>Доступ к сайтам</h2>
+    <p>Расширение работает только на страницах почты:</p>
+    <p>
+      <code>mail.google.com</code>, <code>mail.yandex.ru</code>, <code>mail.yandex.com</code>,
+      <code>mail.yandex.by</code>, <code>mail.yandex.kz</code>, <code>mail.360.yandex.ru</code>,
+      <code>mail.360.yandex.com</code>, <code>360.yandex.ru</code>, <code>e.mail.ru</code>
+    </p>
+    <p>
+      На этих страницах скрипт читает только те элементы, которые нужны для карточки задачи:
+      тему, отправителя и идентификатор письма. Ни на каких других сайтах расширение
+      не запускается.
+    </p>
+
+    <h2>Разрешения и зачем они</h2>
+    <table>
+      <tr><th><code>contextMenus</code></th><td>пункт «Создать задачу» по правому клику</td></tr>
+      <tr><th><code>storage</code></th><td>хранение задач и настроек</td></tr>
+      <tr><th><code>alarms</code></th><td>срабатывание напоминаний в назначенное время</td></tr>
+      <tr><th><code>notifications</code></th><td>показ самих напоминаний</td></tr>
+      <tr><th><code>scripting</code></th><td>внедрение скрипта разбора письма, если вкладку открыли до установки</td></tr>
+      <tr><th>доступ к сайтам почты</th><td>чтение темы, отправителя и ссылки на открытой странице почты</td></tr>
+    </table>
+
+    <h2>Удаление данных</h2>
+    <p>
+      Задачи удаляются кнопкой «Удалить» в списке. Полное удаление расширения из браузера
+      стирает и локальное хранилище. Если синхронизация была включена, копии в
+      <code>chrome.storage.sync</code> удаляются вместе с расширением на всех устройствах,
+      где вы вошли в тот же аккаунт Chrome.
+    </p>
+
+    <h2>Изменения</h2>
+    <p>
+      Новая редакция политики публикуется вместе с обновлением расширения; дата изменения
+      указана в начале документа.
+    </p>
+
+    <h2>Оператор и контакты</h2>
+    <p>
+      Расширение выпускает <strong>ИП Молотило Антон Юрьевич</strong>.
+      Вопросы о расширении и обработке данных:
+      <a href="mailto:taskmail.support@molotilo.digital">taskmail.support@molotilo.digital</a>
+    </p>
+    <p>
+      Оператор не получает ваши данные и не имеет к ним доступа: задачи создаются и хранятся
+      на вашем устройстве, расширение не отправляет сетевых запросов. Поэтому запросы на
+      доступ к данным, их изменение или удаление исполняются вами самостоятельно — через
+      список задач и удаление расширения.
+    </p>
+
+    <footer>
+      TaskMail — задачи с напоминаниями из писем Gmail и Яндекс Почты.
+    </footer>
+  </main>
+</body>
+</html>

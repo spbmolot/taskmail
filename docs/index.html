@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>TaskMail — задачи из писем</title>
+  <meta name="description" content="Расширение Chrome: задача с напоминанием из письма Gmail или Яндекс Почты за три клика.">
+  <style>
+    :root {
+      color-scheme: light dark;
+      --bg: #ffffff;
+      --surface: #f6f7f9;
+      --line: #e4e6ea;
+      --text: #16181d;
+      --muted: #545a66;
+      --accent: #4f46e5;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #16181c;
+        --surface: #1f2228;
+        --line: #2e333b;
+        --text: #e8eaee;
+        --muted: #b3b9c4;
+        --accent: #7c7cff;
+      }
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      padding: 64px 20px 80px;
+      font: 17px/1.6 -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+      color: var(--text);
+      background: var(--bg);
+    }
+
+    main { max-width: 640px; margin: 0 auto; }
+
+    .mark {
+      width: 56px;
+      height: 56px;
+      border-radius: 16px;
+      background: var(--accent);
+      display: grid;
+      place-items: center;
+      margin-bottom: 20px;
+    }
+
+    .mark svg { width: 30px; height: 30px; }
+
+    h1 { font-size: 36px; line-height: 1.15; margin: 0 0 10px; letter-spacing: -0.02em; }
+    .lead { font-size: 19px; color: var(--muted); margin: 0 0 32px; }
+    h2 { font-size: 18px; margin: 36px 0 10px; }
+
+    ul { padding-left: 22px; margin: 0; }
+    li { margin: 8px 0; }
+
+    .links { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 36px; }
+
+    .links a {
+      display: inline-block;
+      padding: 11px 18px;
+      border-radius: 10px;
+      border: 1px solid var(--line);
+      background: var(--surface);
+      color: var(--text);
+      text-decoration: none;
+      font-size: 16px;
+    }
+
+    .links a.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+    footer {
+      margin-top: 52px;
+      padding-top: 20px;
+      border-top: 1px solid var(--line);
+      color: var(--muted);
+      font-size: 15px;
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <div class="mark" aria-hidden="true">
+      <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect x="2.5" y="5" width="19" height="14" rx="2.5" fill="#fff"/>
+        <path d="M4.5 7.5 12 13.5l7.5-6" stroke="#4f46e5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        <circle cx="18.5" cy="17" r="5" fill="#34d399" stroke="#4f46e5" stroke-width="1.6"/>
+        <path d="m16.4 17.1 1.5 1.5 3-3.2" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </div>
+
+    <h1>TaskMail</h1>
+    <p class="lead">
+      Расширение Chrome: письмо из Gmail или Яндекс Почты превращается в задачу
+      с напоминанием — за три клика, не выходя из почты.
+    </p>
+
+    <h2>Что умеет</h2>
+    <ul>
+      <li>Тема, отправитель и ссылка на письмо подставляются сами.</li>
+      <li>Срок одним нажатием: сегодня, завтра, через неделю.</li>
+      <li>Уведомление в назначенное время: открыть письмо, выполнить, отложить.</li>
+      <li>Разделы «Просроченные», «Сегодня», «Предстоящие», «Выполненные», поиск и приоритеты.</li>
+      <li>Работает офлайн; синхронизация между устройствами — по желанию.</li>
+    </ul>
+
+    <h2>Приватность</h2>
+    <ul>
+      <li>Ни одного сетевого запроса: задачи хранятся в браузере.</li>
+      <li>Текст письма не сохраняется без явного согласия и не уходит в синхронизацию.</li>
+      <li>Разрешение на чтение истории просмотров не запрашивается.</li>
+    </ul>
+
+    <div class="links">
+      <a class="primary" href="privacy.html">Политика конфиденциальности</a>
+      <a href="mailto:taskmail.support@molotilo.digital">Написать в поддержку</a>
+    </div>
+
+    <footer>ИП Молотило Антон Юрьевич · taskmail.support@molotilo.digital</footer>
+  </main>
+</body>
+</html>
