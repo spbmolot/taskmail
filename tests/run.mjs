@@ -15,6 +15,7 @@ const suites = [
   'selftest.mjs',
   'static.mjs',
   'boot.mjs',
+  'handlers.mjs',
   'collect.mjs',
   'migrate.mjs',
   'notify.mjs',
