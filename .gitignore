@@ -1,0 +1,15 @@
+# Служебное окружение
+.idea/
+.vscode/
+*.swp
+*~
+
+# Мусор ОС
+Thumbs.db
+desktop.ini
+.DS_Store
+
+# Если появится сборка или зависимости
+node_modules/
+dist/
+*.zip

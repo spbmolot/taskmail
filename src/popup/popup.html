@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <title>TaskMail</title>
+  <link rel="stylesheet" href="../common/theme.css">
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <header class="top">
+    <h1>TaskMail</h1>
+    <span class="counter" id="counter"></span>
+    <button class="icon" id="settingsButton" title="Настройки" aria-label="Настройки">⚙</button>
+    <button class="icon" id="newButton" title="Новая задача" aria-label="Новая задача">＋</button>
+  </header>
+
+  <div class="from-mail" id="fromMailRow" hidden>
+    <button type="button" class="primary" id="fromMail">Создать задачу из письма</button>
+    <div class="muted" id="fromMailHint"></div>
+  </div>
+
+  <div class="search-row">
+    <input type="search" id="search" placeholder="Поиск по теме, отправителю, комментарию" autocomplete="off">
+  </div>
+
+  <div id="banners" class="banners"></div>
+
+  <main id="list" class="list" aria-busy="true">
+    <div class="skeleton"></div>
+    <div class="skeleton"></div>
+    <div class="skeleton"></div>
+  </main>
+
+  <section class="settings" id="settings" hidden>
+    <div class="settings-head">
+      <h2>Настройки</h2>
+      <button class="icon" id="settingsClose" aria-label="Закрыть настройки">✕</button>
+    </div>
+
+    <label class="field-inline">
+      <span>Время напоминания по умолчанию</span>
+      <input type="time" id="setDefaultTime">
+    </label>
+
+    <label class="field-inline">
+      <span>Отложить на</span>
+      <select id="setSnooze">
+        <option value="10">10 минут</option>
+        <option value="15">15 минут</option>
+        <option value="30">30 минут</option>
+        <option value="60">1 час</option>
+        <option value="180">3 часа</option>
+      </select>
+    </label>
+
+    <label class="field-inline">
+      <span>Приоритет по умолчанию</span>
+      <select id="setPriority">
+        <option value="high">Высокий</option>
+        <option value="normal">Обычный</option>
+        <option value="low">Низкий</option>
+      </select>
+    </label>
+
+    <label class="switch">
+      <input type="checkbox" id="setSaveExcerpt">
+      <span>Разрешать сохранять выделенный текст письма<small>По умолчанию текст письма не сохраняется</small></span>
+    </label>
+
+    <label class="switch">
+      <input type="checkbox" id="setKeepWallClock">
+      <span>Сохранять время суток при смене часового пояса<small>«Завтра в 9:00» останется девятью утра на новом месте</small></span>
+    </label>
+
+    <label class="switch">
+      <input type="checkbox" id="setCatchUp">
+      <span>Показывать пропущенные напоминания<small>Если Chrome был закрыт в назначенное время</small></span>
+    </label>
+
+    <label class="switch">
+      <input type="checkbox" id="setSync">
+      <span>Синхронизировать между устройствами<small>Через аккаунт Chrome; работает и офлайн, отправит при подключении</small></span>
+    </label>
+
+    <div class="settings-foot muted" id="settingsInfo"></div>
+  </section>
+
+  <div class="toast" id="toast" hidden></div>
+
+  <script type="module" src="popup.js"></script>
+</body>
+</html>

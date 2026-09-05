@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <title>Задача из письма</title>
+  <link rel="stylesheet" href="../common/theme.css">
+  <link rel="stylesheet" href="editor.css">
+</head>
+<body>
+  <header class="editor-header">
+    <div>
+      <h1 id="title">Новая задача</h1>
+      <div class="muted truncate" id="context"></div>
+    </div>
+    <span class="badge" id="serviceBadge" hidden></span>
+  </header>
+
+  <main class="editor-body">
+    <div id="banners"></div>
+
+    <div class="field" id="modeField" hidden>
+      <label>Выделено писем: <span id="selectedCount">0</span></label>
+      <div class="segmented" id="modeSwitch" role="tablist">
+        <button type="button" data-mode="separate" aria-selected="true">Отдельные задачи</button>
+        <button type="button" data-mode="combined" aria-selected="false">Одна общая</button>
+      </div>
+      <ul class="letters" id="letters"></ul>
+    </div>
+
+    <form id="form" novalidate>
+      <div class="field">
+        <label for="subject">Тема письма</label>
+        <input type="text" id="subject" autocomplete="off" placeholder="(без темы)">
+      </div>
+
+      <div class="row">
+        <div class="field">
+          <label for="senderName">Отправитель</label>
+          <input type="text" id="senderName" autocomplete="off" placeholder="не определён">
+        </div>
+        <div class="field">
+          <label for="senderEmail">Email</label>
+          <input type="text" id="senderEmail" autocomplete="off" placeholder="не определён">
+        </div>
+      </div>
+
+      <div class="field" id="linkField">
+        <label for="link">Ссылка на письмо</label>
+        <input type="text" id="link" spellcheck="false">
+        <label class="checkbox" id="threadToggleWrap" hidden>
+          <input type="checkbox" id="useThreadLink">
+          <span>Ссылка на всю переписку</span>
+        </label>
+      </div>
+
+      <div class="field">
+        <label>Срок и напоминание</label>
+        <div class="chips" id="dueChips">
+          <button type="button" class="chip" data-preset="today">Сегодня</button>
+          <button type="button" class="chip" data-preset="tomorrow">Завтра</button>
+          <button type="button" class="chip" data-preset="week">Через неделю</button>
+          <button type="button" class="chip" data-preset="custom">Выбрать дату</button>
+          <button type="button" class="chip" data-preset="none">Без срока</button>
+        </div>
+        <div class="row date-row" id="dateRow">
+          <input type="date" id="date" aria-label="Дата напоминания">
+          <input type="time" id="time" aria-label="Время напоминания">
+        </div>
+        <div class="muted" id="whenHint"></div>
+      </div>
+
+      <div class="field">
+        <label>Приоритет</label>
+        <div class="segmented priority" id="priority">
+          <button type="button" data-priority="high" aria-pressed="false"><i class="dot high"></i>Высокий</button>
+          <button type="button" data-priority="normal" aria-pressed="true"><i class="dot normal"></i>Обычный</button>
+          <button type="button" data-priority="low" aria-pressed="false"><i class="dot low"></i>Низкий</button>
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="comment">Комментарий</label>
+        <textarea id="comment" placeholder="Что нужно сделать по этому письму"></textarea>
+      </div>
+
+      <div class="field" id="excerptField" hidden>
+        <label class="checkbox">
+          <input type="checkbox" id="excerptToggle">
+          <span>Прикрепить выделенный фрагмент письма</span>
+        </label>
+        <div class="excerpt muted" id="excerptPreview"></div>
+        <div class="muted">Текст письма сохраняется только с вашего согласия и остаётся на этом компьютере.</div>
+      </div>
+    </form>
+  </main>
+
+  <footer class="editor-footer">
+    <button type="button" id="cancel">Отмена</button>
+    <button type="submit" form="form" class="primary" id="save">Сохранить</button>
+  </footer>
+
+  <div class="toast" id="toast" hidden></div>
+
+  <script type="module" src="editor.js"></script>
+</body>
+</html>

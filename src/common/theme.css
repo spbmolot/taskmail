@@ -1,0 +1,415 @@
+/* Дизайн-система TaskMail: бело-графитовая база, один акцент, светлая и тёмная темы. */
+
+:root {
+  color-scheme: light dark;
+
+  --bg: #ffffff;
+  --bg-subtle: #f6f7f9;
+  --surface: #ffffff;
+  --surface-hover: #f3f4f6;
+  --surface-sunken: #f1f2f4;
+  --line: #e4e6ea;
+  --line-strong: #d3d6dc;
+
+  --text: #16181d;
+  --text-secondary: #545a66;
+  /* Мелкий текст (11px) обязан проходить по контрасту — отсюда затемнение. */
+  --text-muted: #6c727e;
+
+  --accent: #4f46e5;
+  --accent-hover: #4338ca;
+  --accent-active: #3730a3;
+  --accent-soft: #eef0fe;
+  --accent-fg: #ffffff;
+
+  --danger: #d92d20;
+  --danger-soft: #fdecea;
+  --warning: #b54708;
+  --warning-soft: #fdf3e6;
+  --success: #067647;
+  --success-soft: #e7f6ee;
+
+  --prio-high: #e5484d;
+  --prio-normal: #8b93a1;
+  --prio-low: #2f9e6d;
+
+  --radius-sm: 6px;
+  --radius: 10px;
+  --radius-lg: 14px;
+  --radius-pill: 999px;
+
+  --shadow-sm: 0 1px 2px rgba(16, 18, 22, 0.06);
+  --shadow: 0 4px 16px rgba(16, 18, 22, 0.1);
+
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+
+  --font: -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --fs-xs: 11px;
+  --fs-sm: 12px;
+  --fs-md: 13px;
+  --fs-lg: 15px;
+
+  --transition: 120ms ease;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #16181c;
+    --bg-subtle: #1b1e23;
+    --surface: #1f2228;
+    --surface-hover: #272b32;
+    --surface-sunken: #15171b;
+    --line: #2e333b;
+    --line-strong: #3b414b;
+
+    --text: #e8eaee;
+    --text-secondary: #b3b9c4;
+    --text-muted: #99a0ac;
+
+    --accent: #7c7cff;
+    --accent-hover: #8f8fff;
+    --accent-active: #6c6cf0;
+    --accent-soft: #23244a;
+    --accent-fg: #0f1014;
+
+    --danger: #ff6b64;
+    --danger-soft: #3a1f1f;
+    --warning: #f0a656;
+    --warning-soft: #362614;
+    --success: #4ec38a;
+    --success-soft: #17301f;
+
+    --prio-high: #ff6b64;
+    --prio-normal: #8f97a4;
+    --prio-low: #4ec38a;
+
+    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
+    --shadow: 0 6px 20px rgba(0, 0, 0, 0.45);
+  }
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font);
+  font-size: var(--fs-md);
+  line-height: 1.45;
+  color: var(--text);
+  background: var(--bg);
+  -webkit-font-smoothing: antialiased;
+}
+
+h1 {
+  font-size: var(--fs-lg);
+  font-weight: 600;
+  margin: 0;
+}
+
+h2 {
+  font-size: var(--fs-xs);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin: 0;
+}
+
+input,
+textarea,
+select,
+button {
+  font: inherit;
+  color: inherit;
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+
+/* --------------------------------- Поля ----------------------------------- */
+
+.field {
+  margin-bottom: var(--space-3);
+}
+
+.field > label,
+.label {
+  display: block;
+  font-size: var(--fs-xs);
+  font-weight: 500;
+  color: var(--text-secondary);
+  margin-bottom: var(--space-1);
+}
+
+input[type='text'],
+input[type='email'],
+input[type='date'],
+input[type='time'],
+input[type='search'],
+input[type='number'],
+textarea,
+select {
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  color: var(--text);
+  transition: border-color var(--transition), box-shadow var(--transition);
+}
+
+input:hover:not(:disabled),
+textarea:hover:not(:disabled),
+select:hover:not(:disabled) {
+  border-color: var(--line-strong);
+}
+
+input:focus,
+textarea:focus,
+select:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-soft);
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: var(--text-muted);
+}
+
+textarea {
+  resize: vertical;
+  min-height: 60px;
+}
+
+.row {
+  display: flex;
+  gap: var(--space-2);
+}
+
+.row > * {
+  flex: 1;
+  min-width: 0;
+}
+
+/* -------------------------------- Кнопки ---------------------------------- */
+
+button {
+  cursor: pointer;
+  border: 1px solid var(--line);
+  background: var(--surface);
+  color: var(--text);
+  border-radius: var(--radius-sm);
+  padding: 8px 12px;
+  transition: background var(--transition), border-color var(--transition), color var(--transition);
+}
+
+button:hover:not(:disabled) {
+  background: var(--surface-hover);
+  border-color: var(--line-strong);
+}
+
+button:active:not(:disabled) {
+  transform: translateY(0.5px);
+}
+
+button:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+
+button.primary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--accent-fg);
+  font-weight: 500;
+}
+
+button.primary:hover:not(:disabled) {
+  background: var(--accent-hover);
+  border-color: var(--accent-hover);
+}
+
+button.primary:active:not(:disabled) {
+  background: var(--accent-active);
+}
+
+button.ghost {
+  border-color: transparent;
+  background: transparent;
+  color: var(--text-secondary);
+  padding: 5px 8px;
+}
+
+button.ghost:hover:not(:disabled) {
+  background: var(--surface-hover);
+  border-color: transparent;
+  color: var(--text);
+}
+
+button.ghost.danger:hover:not(:disabled) {
+  color: var(--danger);
+}
+
+button.icon {
+  padding: 6px;
+  line-height: 0;
+  border-color: transparent;
+  background: transparent;
+  color: var(--text-secondary);
+}
+
+button.icon:hover:not(:disabled) {
+  background: var(--surface-hover);
+  color: var(--text);
+}
+
+/* ---------------------------- Чипы и переключатели ------------------------- */
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+}
+
+.chip {
+  padding: 5px 10px;
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--line);
+  background: var(--surface);
+  font-size: var(--fs-sm);
+  color: var(--text-secondary);
+}
+
+.chip:hover:not(:disabled) {
+  border-color: var(--line-strong);
+  background: var(--surface-hover);
+}
+
+.chip[aria-pressed='true'] {
+  background: var(--accent-soft);
+  border-color: var(--accent);
+  color: var(--accent);
+  font-weight: 500;
+}
+
+.segmented {
+  display: flex;
+  gap: 2px;
+  padding: 2px;
+  background: var(--surface-sunken);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+}
+
+.segmented button {
+  flex: 1;
+  border: none;
+  background: transparent;
+  padding: 6px 8px;
+  font-size: var(--fs-sm);
+  border-radius: 5px;
+  color: var(--text-secondary);
+}
+
+.segmented button:hover:not(:disabled) {
+  background: var(--surface-hover);
+}
+
+.segmented button[aria-pressed='true'],
+.segmented button[aria-selected='true'] {
+  background: var(--surface);
+  color: var(--text);
+  font-weight: 500;
+  box-shadow: var(--shadow-sm);
+}
+
+/* -------------------------------- Баннеры --------------------------------- */
+
+.banner {
+  display: flex;
+  gap: var(--space-2);
+  align-items: flex-start;
+  padding: 9px 11px;
+  border-radius: var(--radius-sm);
+  font-size: var(--fs-sm);
+  border: 1px solid transparent;
+  margin-bottom: var(--space-3);
+}
+
+.banner.warning {
+  background: var(--warning-soft);
+  border-color: color-mix(in srgb, var(--warning) 30%, transparent);
+  color: var(--warning);
+}
+
+.banner.error {
+  background: var(--danger-soft);
+  border-color: color-mix(in srgb, var(--danger) 30%, transparent);
+  color: var(--danger);
+}
+
+.banner.success {
+  background: var(--success-soft);
+  border-color: color-mix(in srgb, var(--success) 30%, transparent);
+  color: var(--success);
+}
+
+.banner .banner-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.banner button {
+  padding: 3px 8px;
+  font-size: var(--fs-xs);
+  background: transparent;
+  border-color: currentColor;
+  color: inherit;
+}
+
+/* -------------------------------- Утилиты --------------------------------- */
+
+.muted {
+  color: var(--text-muted);
+  font-size: var(--fs-sm);
+}
+
+.truncate {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.hidden,
+[hidden] {
+  display: none !important;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    transition: none !important;
+    animation: none !important;
+  }
+}
