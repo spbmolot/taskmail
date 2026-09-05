@@ -259,16 +259,30 @@ chrome.notifications.onClosed.addListener((notificationId) => {
   if (id) refreshSchedule();
 });
 
-/** Запасной путь: список задач отдельной вкладкой. */
+/**
+ * Запасной путь: список задач отдельной вкладкой. Ранее открытую вкладку
+ * запоминаем по id, а не ищем поиском по URL: фильтр tabs.query({url}) требует
+ * разрешения "tabs", а оно показывает при установке пугающее «читать историю
+ * просмотров» — ради одной кнопки это несоразмерная плата.
+ */
+const LIST_TAB_KEY = 'listTabId';
+
 async function openTaskList() {
   const url = chrome.runtime.getURL('src/popup/popup.html?full=1');
-  const existing = await chrome.tabs.query({ url });
-  if (existing.length) {
-    await chrome.tabs.update(existing[0].id, { active: true });
-    await chrome.windows.update(existing[0].windowId, { focused: true });
-    return;
+  const stored = (await chrome.storage.session.get(LIST_TAB_KEY))[LIST_TAB_KEY];
+
+  if (stored) {
+    try {
+      const tab = await chrome.tabs.update(stored, { active: true });
+      if (tab && tab.windowId !== undefined) await chrome.windows.update(tab.windowId, { focused: true });
+      return;
+    } catch (error) {
+      // Вкладку закрыли — откроем новую.
+    }
   }
-  await chrome.tabs.create({ url });
+
+  const tab = await chrome.tabs.create({ url });
+  await chrome.storage.session.set({ [LIST_TAB_KEY]: tab.id });
 }
 
 /* --------------------------------- Сообщения ------------------------------- */
