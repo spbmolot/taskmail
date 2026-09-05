@@ -7,6 +7,7 @@
 import { LETTERS, makeTask, plural, serviceLabel } from '../common/model.js';
 import { findDuplicates } from '../common/store.js';
 import { defaultReminder } from '../common/datetime.js';
+import { serviceOf } from '../common/hosts.js';
 
 const EXTRACT_TIMEOUT_MS = 1500;
 
@@ -52,15 +53,8 @@ export async function collectFromTab(tab, info) {
 
 function fromTabFallback(tab, info) {
   const url = (info && info.pageUrl) || tab.url || '';
-  const serviceId = url.includes('mail.google.com')
-    ? 'gmail'
-    : url.includes('yandex.')
-      ? 'yandex'
-      : url.includes('mail.ru')
-        ? 'mailru'
-        : 'other';
   return {
-    serviceId,
+    serviceId: serviceOf(url),
     accountId: '',
     accountEmail: '',
     mode: 'unknown',

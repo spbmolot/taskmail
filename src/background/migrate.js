@@ -3,6 +3,7 @@
 import { SCHEMA_VERSION, makeTask, timeZone } from '../common/model.js';
 import { getTasks, replaceAll } from '../common/store.js';
 import { toLocalStr, toDateStr } from '../common/datetime.js';
+import { serviceOf } from '../common/hosts.js';
 
 const SERVICE_BY_LABEL = {
   Gmail: 'gmail',
@@ -12,12 +13,9 @@ const SERVICE_BY_LABEL = {
 
 function serviceIdFrom(task) {
   if (task.serviceId) return task.serviceId;
+  // В первой версии сервис хранился подписью на русском.
   if (SERVICE_BY_LABEL[task.service]) return SERVICE_BY_LABEL[task.service];
-  const link = task.link || task.messageLink || '';
-  if (link.includes('mail.google.com')) return 'gmail';
-  if (link.includes('yandex.')) return 'yandex';
-  if (link.includes('mail.ru')) return 'mailru';
-  return 'other';
+  return serviceOf(task.link || task.messageLink || '');
 }
 
 /** Приводит любую сохранённую задачу к актуальной схеме. */

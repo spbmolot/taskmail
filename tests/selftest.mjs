@@ -18,6 +18,7 @@ import {
   toLocalStr
 } from '../src/common/datetime.js';
 import {
+  SERVICES,
   dedupeKey,
   displaySender,
   makeTask,
@@ -27,7 +28,13 @@ import {
   taskLink
 } from '../src/common/model.js';
 import { resolveUrl, searchUrl } from '../src/background/links.js';
-import { MAIL_HOSTS, MAIL_MATCH_PATTERNS, isMailUrl } from '../src/common/hosts.js';
+import {
+  MAIL_HOSTS,
+  MAIL_MATCH_PATTERNS,
+  SERVICE_IDS,
+  isMailUrl,
+  serviceOf
+} from '../src/common/hosts.js';
 import { readFileSync } from 'node:fs';
 
 let passed = 0;
@@ -246,6 +253,40 @@ check('в списке нет дублей и все хосты выглядят
   assert.equal(new Set(MAIL_HOSTS).size, MAIL_HOSTS.length);
   for (const host of MAIL_HOSTS) {
     assert.ok(/^[a-z0-9.-]+\.[a-z]{2,}$/.test(host), `подозрительный хост: ${host}`);
+  }
+});
+
+check('сервис определяется по хосту, а не по подстроке в адресе', () => {
+  assert.equal(serviceOf('https://mail.google.com/mail/u/0/#all/16be0868ae18c6a7'), 'gmail');
+  assert.equal(serviceOf('https://mail.360.yandex.ru/?uid=113#/message/1'), 'yandex');
+  assert.equal(serviceOf('https://mail.yandex.ru/#message/17612345'), 'yandex');
+  assert.equal(serviceOf('https://e.mail.ru/inbox/0:1234/'), 'mailru');
+
+  // Ровно та ловушка, из-за которой ушли от includes(): чужой сайт с адресом
+  // почты в параметре выдавал себя за Gmail.
+  assert.equal(serviceOf('https://example.com/?u=mail.google.com'), 'other');
+  assert.equal(serviceOf('https://phish.mail.ru.evil.com/'), 'other');
+
+  // Неподдерживаемый хост знакомого домена всё же опознаётся: такие ссылки
+  // остались в задачах от прежних версий.
+  assert.equal(serviceOf('https://mail.yandex.com.tr/#message/1'), 'yandex');
+  assert.equal(serviceOf('https://touch.mail.ru/inbox'), 'mailru');
+
+  assert.equal(serviceOf(''), 'other');
+  assert.equal(serviceOf(undefined), 'other');
+  assert.equal(serviceOf('не ссылка'), 'other');
+});
+
+check('каждый хост из списка относится к своему сервису', () => {
+  for (const host of MAIL_HOSTS) {
+    const id = serviceOf(`https://${host}/`);
+    assert.ok(SERVICE_IDS.includes(id), `${host} → ${id}`);
+  }
+});
+
+check('у каждого сервиса есть подпись в модели', () => {
+  for (const id of SERVICE_IDS) {
+    assert.ok(SERVICES[id] && SERVICES[id].label, `нет подписи для ${id}`);
   }
 });
 

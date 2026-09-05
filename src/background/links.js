@@ -10,12 +10,7 @@
  */
 
 import { taskLink } from '../common/model.js';
-
-const DEFAULT_HOSTS = {
-  gmail: 'mail.google.com',
-  yandex: 'mail.yandex.ru',
-  mailru: 'e.mail.ru'
-};
+import { defaultHostOf, serviceOf } from '../common/hosts.js';
 
 /** Адрес сервиса берём из самой задачи: у Яндекса это mail.yandex.ru или mail.360.yandex.ru. */
 function originOf(task) {
@@ -23,7 +18,7 @@ function originOf(task) {
   try {
     return new URL(link).origin;
   } catch (error) {
-    return `https://${DEFAULT_HOSTS[task.serviceId] || DEFAULT_HOSTS.gmail}`;
+    return `https://${defaultHostOf(task.serviceId)}`;
   }
 }
 
@@ -66,7 +61,7 @@ export function searchUrl(task) {
 
   if (task.serviceId === 'gmail') {
     const query = encodeURIComponent(`from:${email} in:anywhere`).replace(/%20/g, '+');
-    return `https://mail.google.com/mail/u/${gmailAccount(task)}/#search/${query}`;
+    return `https://${defaultHostOf('gmail')}/mail/u/${gmailAccount(task)}/#search/${query}`;
   }
 
   if (task.serviceId === 'yandex') {
@@ -90,7 +85,7 @@ export function resolveUrl(task, { fallback = false } = {}) {
   const direct = taskLink(task);
   if (!direct) return searchUrl(task);
 
-  if (task.serviceId === 'gmail' && task.accountEmail && direct.includes('mail.google.com')) {
+  if (task.serviceId === 'gmail' && task.accountEmail && serviceOf(direct) === 'gmail') {
     try {
       const parsed = new URL(direct);
       // Форма /mail/u/<email>/ — документированный deep-link на конкретный
