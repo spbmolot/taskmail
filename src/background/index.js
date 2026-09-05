@@ -32,7 +32,7 @@ import {
   snoozeTimes,
   syncTimeZone
 } from './reminders.js';
-import { syncNow, watchRemoteChanges } from './sync.js';
+import { clearRemote, pushAll, syncNow, watchRemoteChanges } from './sync.js';
 
 const MENU_ROOT = 'taskmail-create';
 const EDITOR_PATH = 'src/editor/editor.html';
@@ -345,7 +345,8 @@ const handlers = {
   async SETTINGS_SET({ patch }) {
     const settings = await setSettings(patch);
     if (patch && patch.syncEnabled !== undefined) {
-      const { pushAll, clearRemote } = await import('./sync.js');
+      // Только статический импорт: динамический import() в service worker
+      // запрещён спецификацией и падает TypeError прямо в обработчике.
       if (patch.syncEnabled) await pushAll();
       else await clearRemote();
     }

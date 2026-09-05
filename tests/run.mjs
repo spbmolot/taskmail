@@ -13,6 +13,7 @@ import { dirname, join } from 'node:path';
 const here = dirname(fileURLToPath(import.meta.url));
 const suites = [
   'selftest.mjs',
+  'static.mjs',
   'boot.mjs',
   'collect.mjs',
   'migrate.mjs',
