@@ -57,7 +57,9 @@ export function installChromeMock({ permissionLevel = 'granted' } = {}) {
   const sync = new Map();
   const session = new Map();
   const alarms = new Map();
-  const notifications = [];
+  const notifications = []; // журнал всех показов
+  const live = new Map(); // то, что сейчас висит на экране
+  const cleared = [];
   const badge = { text: '', title: '', color: '' };
   const state = { permissionLevel };
   const listeners = new Map();
@@ -98,10 +100,16 @@ export function installChromeMock({ permissionLevel = 'granted' } = {}) {
       create(id, options, callback) {
         if (hooks.beforeNotify) hooks.beforeNotify(id, options);
         notifications.push({ id, options });
+        live.set(id, options);
         if (callback) callback(id);
       },
       clear(id, callback) {
-        if (callback) callback(true);
+        const existed = live.delete(id);
+        cleared.push(id);
+        if (callback) callback(existed);
+      },
+      async getAll() {
+        return Object.fromEntries([...live.keys()].map((id) => [id, true]));
       },
       getPermissionLevel(callback) {
         callback(state.permissionLevel);
@@ -192,6 +200,8 @@ export function installChromeMock({ permissionLevel = 'granted' } = {}) {
     session,
     alarms,
     notifications,
+    live,
+    cleared,
     badge,
     hooks,
     setPermissionLevel(level) {

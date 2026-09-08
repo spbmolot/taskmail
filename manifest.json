@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "TaskMail — задачи из писем",
-  "version": "2.0.2",
+  "version": "2.0.3",
   "description": "Задачи с напоминаниями из писем Gmail и Яндекс Почты: срок, приоритет, комментарий и уведомление в нужный момент.",
   "minimum_chrome_version": "116",
   "homepage_url": "https://spbmolot.github.io/taskmail/",

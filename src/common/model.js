@@ -86,6 +86,34 @@ export function taskLink(task) {
   return task.messageLink || task.threadLink || task.searchLink || '';
 }
 
+/*
+ * Признаки того, что ссылка ведёт к письму, а не к папке. Ссылка на список
+ * писем внешне неотличима от рабочей: она открывается, но показывает ящик —
+ * и «Открыть» выглядит сломанным. Такие ссылки появляются, когда почта
+ * перерисовала вёрстку и идентификатор письма достать не удалось.
+ */
+const MESSAGE_LINK = {
+  // #all/16be0868ae18c6a7, #inbox/FMfcgz… — но не #search/from%3A…
+  gmail: (url) => /^#(?!search\/)[^/]+\/[A-Za-z0-9_-]{8,}/.test(url.hash),
+  // #/message/1857…, #thread/1857… — но не #/folder/67
+  yandex: (url) => /^#\/?(?:message|thread)\/[^/]+/.test(url.hash),
+  // /inbox/0:1234-5678/ — но не /inbox/
+  mailru: (url) => /\/\d+:[\d-]+/.test(url.pathname)
+};
+
+export function isMessageLink(link, serviceId) {
+  if (!link) return false;
+  let url;
+  try {
+    url = new URL(link);
+  } catch (error) {
+    return false;
+  }
+  const test = MESSAGE_LINK[serviceId];
+  // Незнакомый сервис — судить не о чем, считаем ссылку рабочей.
+  return test ? test(url) : true;
+}
+
 function accountKey(task) {
   return `${task.serviceId}|${(task.accountEmail || task.accountId || '').toLowerCase()}`;
 }

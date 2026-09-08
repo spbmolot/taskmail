@@ -245,13 +245,27 @@ chrome.notifications.onClicked.addListener((notificationId) => {
 });
 
 chrome.notifications.onButtonClicked.addListener((notificationId, buttonIndex) => {
+  const id = taskIdFromNotification(notificationId);
+  if (!id) return;
+
+  // Уведомление снимаем сразу, до записи в хранилище: иначе кнопка выглядит
+  // нажатой впустую, пока идёт работа, а service worker в этот момент могут
+  // выгрузить — и уведомление осталось бы висеть.
+  chrome.notifications.clear(notificationId);
+
+  const snoozing = buttonIndex !== 0;
   (async () => {
-    const id = taskIdFromNotification(notificationId);
-    if (!id) return;
-    if (buttonIndex === 0) await completeTask(id, true);
-    else await snooze(id);
-    chrome.notifications.clear(notificationId);
-  })().catch((error) => console.error('TaskMail: кнопка уведомления', error));
+    const task = snoozing ? await snooze(id) : await completeTask(id, true);
+    // patchTask возвращает null, если задачи уже нет: тихо промолчать нельзя —
+    // пользователь считает, что напоминание перенесено.
+    if (!task) await notifyProblem('задача не найдена: возможно, её удалили', 'TaskMail');
+  })().catch(async (error) => {
+    console.error('TaskMail: кнопка уведомления', error);
+    await notifyProblem(
+      snoozing ? 'не удалось отложить напоминание' : 'не удалось отметить задачу выполненной',
+      'TaskMail'
+    );
+  });
 });
 
 chrome.notifications.onClosed.addListener((notificationId) => {

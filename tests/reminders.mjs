@@ -170,4 +170,17 @@ await check('перенос напоминания уводит его в буд
   assert.equal(patch.remindLocal.slice(0, 4), String(new Date().getFullYear()));
 });
 
+await check('нечисловая задержка не превращает напоминание в NaN', async () => {
+  const { snoozeTimes } = await setup();
+
+  // Значение приходит из настроек и из кнопки уведомления. remindAt = NaN
+  // сохранился бы как null, и задача навсегда выпала бы из расписания.
+  for (const bad of [undefined, null, '', 'пятнадцать', 0, -5]) {
+    const patch = snoozeTimes(bad);
+    assert.ok(Number.isFinite(patch.remindAt), `remindAt при ${JSON.stringify(bad)}`);
+    assert.ok(patch.remindAt > Date.now(), 'перенос обязан быть в будущее');
+    assert.ok(!patch.remindLocal.includes('NaN'), patch.remindLocal);
+  }
+});
+
 done();

@@ -117,6 +117,19 @@ await check('TASK_TOGGLE отмечает выполненной и возвра
   assert.equal(back.task.completedAt, null);
 });
 
+await check('окно правки возвращает выполненную задачу в работу', async () => {
+  const finished = await call('TASK_TOGGLE', { id: 'task1', done: true });
+
+  // Именно так сохраняет окно правки: поля задачи целиком плюс новый статус.
+  const reopened = await call('TASK_SAVE', {
+    task: { ...finished.task, done: false, completedAt: null }
+  });
+
+  assert.equal(reopened.task.done, false);
+  assert.equal(reopened.task.completedAt, null);
+  assert.equal(mock.tasks().find((item) => item.id === 'task1').done, false);
+});
+
 await check('TASK_SNOOZE переносит напоминание в будущее', async () => {
   const before = mock.tasks().find((task) => task.id === 'task1').remindAt;
   const response = await call('TASK_SNOOZE', { id: 'task1', minutes: 45 });
@@ -228,6 +241,71 @@ await check('CREATE_FROM_ACTIVE_TAB собирает задачу из пись�
 
   const draftId = new URL(lastWindow().url).searchParams.get('draft');
   assert.equal(mock.session.get(draftId).separate[0].subject, 'Счёт за хостинг');
+});
+
+/* ---------------------- Кнопки на самом уведомлении ------------------------ */
+
+// Предыдущая проверка оставила в настройках 30 минут — возвращаем штатные 15.
+await call('SETTINGS_SET', { patch: { snoozeMinutes: 15 } });
+
+/** Показывает напоминание и возвращает id уведомления — как это делает Chrome. */
+async function notifyNow(id) {
+  const at = new Date(Date.now() - 60000);
+  await call('TASK_SAVE', {
+    task: makeTask({
+      id,
+      subject: 'Счёт за хостинг',
+      senderEmail: 'billing@timeweb.ru',
+      serviceId: 'gmail',
+      remindLocal: toLocalStr(at),
+      lastNotifiedAt: null
+    })
+  });
+
+  const shown = mock.notifications[mock.notifications.length - 1];
+  assert.ok(shown && shown.id.includes(id), 'напоминание не показано');
+  return shown.id;
+}
+
+await check('кнопка «Отложить» на уведомлении переносит напоминание', async () => {
+  const notificationId = await notifyNow('snoozeMe');
+
+  mock.fire('notifications.onButtonClicked', notificationId, 1);
+  await new Promise((resolve) => setTimeout(resolve, 30));
+
+  const task = mock.tasks().find((item) => item.id === 'snoozeMe');
+  const minutes = Math.round((task.remindAt - Date.now()) / 60000);
+  assert.ok(minutes >= 14 && minutes <= 15, `перенос на ${minutes} мин вместо 15`);
+  assert.equal(task.lastNotifiedAt, null, 'без сброса отметки напоминание не повторится');
+  assert.ok(mock.alarms.get('taskmail:next'), 'будильник на перенесённое время не выставлен');
+  assert.ok(mock.cleared.includes(notificationId), 'уведомление осталось висеть после нажатия');
+});
+
+await check('перенесённое напоминание показывается заново', async () => {
+  const before = mock.notifications.length;
+  const task = mock.tasks().find((item) => item.id === 'snoozeMe');
+
+  // Отматываем время вперёд так же, как это сделал бы будильник через 15 минут.
+  await call('TASK_SAVE', { task: { ...task, remindLocal: toLocalStr(new Date(Date.now() - 1000)) } });
+
+  const shown = mock.notifications.slice(before).filter((item) => item.id.includes('snoozeMe'));
+  assert.equal(shown.length, 1, 'повторное напоминание не показано');
+
+  // Одинаковый id Chrome считает обновлением, а обновление на Windows не
+  // всплывает — именно поэтому «Отложить» выглядело неработающим.
+  const ids = mock.notifications.filter((item) => item.id.includes('snoozeMe')).map((item) => item.id);
+  assert.equal(new Set(ids).size, ids.length, `показы делят один id: ${ids.join(', ')}`);
+});
+
+await check('кнопка «Выполнено» на уведомлении закрывает задачу', async () => {
+  const notificationId = await notifyNow('finishMe');
+
+  mock.fire('notifications.onButtonClicked', notificationId, 0);
+  await new Promise((resolve) => setTimeout(resolve, 30));
+
+  const task = mock.tasks().find((item) => item.id === 'finishMe');
+  assert.equal(task.done, true);
+  assert.ok(task.completedAt, 'дата выполнения не проставлена');
 });
 
 await check('в наборе проверен каждый обработчик шины', () => {

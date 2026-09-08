@@ -9,7 +9,7 @@
  *    пользователь правит под себя, а адрес отправителя у письма неизменен.
  */
 
-import { taskLink } from '../common/model.js';
+import { isMessageLink, taskLink } from '../common/model.js';
 import { defaultHostOf, serviceOf } from '../common/hosts.js';
 
 /** Адрес сервиса берём из самой задачи: у Яндекса это mail.yandex.ru или mail.360.yandex.ru. */
@@ -77,29 +77,39 @@ export function searchUrl(task) {
   return task.searchLink || '';
 }
 
-/** Итоговый URL: прямая ссылка на письмо либо поиск по отправителю. */
-export function resolveUrl(task, { fallback = false } = {}) {
-  if (!task) return '';
-  if (fallback) return searchUrl(task) || taskLink(task);
+/** Доводит ссылку до нужного ящика — у пользователя их может быть несколько. */
+function withAccount(url, task) {
+  if (!url) return '';
 
-  const direct = taskLink(task);
-  if (!direct) return searchUrl(task);
-
-  if (task.serviceId === 'gmail' && task.accountEmail && serviceOf(direct) === 'gmail') {
+  if (task.serviceId === 'gmail' && task.accountEmail && serviceOf(url) === 'gmail') {
     try {
-      const parsed = new URL(direct);
+      const parsed = new URL(url);
       // Форма /mail/u/<email>/ — документированный deep-link на конкретный
       // ящик. Числовой индекс /u/0/ «уезжает», когда меняется порядок входа.
       parsed.pathname = `/mail/u/${gmailAccount(task)}/`;
       return parsed.toString();
     } catch (error) {
-      return direct;
+      return url;
     }
   }
 
-  if (task.serviceId === 'yandex') return withYandexAccount(direct, task);
+  if (task.serviceId === 'yandex') return withYandexAccount(url, task);
 
-  return direct;
+  return url;
+}
+
+/** Итоговый URL: прямая ссылка на письмо либо поиск по отправителю. */
+export function resolveUrl(task, { fallback = false } = {}) {
+  if (!task) return '';
+
+  const direct = withAccount(taskLink(task), task);
+  if (fallback) return searchUrl(task) || direct;
+
+  // Ссылка на папку открыла бы просто ящик — искать по отправителю полезнее.
+  // Такое бывает у задач, созданных до того, как почта поменяла вёрстку.
+  if (direct && isMessageLink(direct, task.serviceId)) return direct;
+
+  return searchUrl(task) || direct;
 }
 
 /**

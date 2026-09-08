@@ -126,8 +126,47 @@ await check('недоставленные накапливаются и сним
 await check('id задачи вынимается только из своих уведомлений', async () => {
   const { taskIdFromNotification } = await setup();
   assert.equal(taskIdFromNotification('taskmail:task:t_42'), 't_42');
+  assert.equal(taskIdFromNotification('taskmail:task:t_42#mfz1k'), 't_42', 'метка показа мешает разбору');
   assert.equal(taskIdFromNotification('taskmail:missed'), null);
   assert.equal(taskIdFromNotification('чужое уведомление'), null);
+  assert.equal(taskIdFromNotification(undefined), null);
+});
+
+await check('повторный показ той же задачи получает новый id', async () => {
+  const { mock, notifyTask } = await setup();
+  const one = task({ id: 't_42' });
+
+  await notifyTask(one, 15);
+  // Задержка нужна, чтобы метка показа (Date.now в base36) заведомо отличалась.
+  await new Promise((resolve) => setTimeout(resolve, 5));
+  await notifyTask(one, 15);
+
+  const [first, second] = mock.notifications.map((item) => item.id);
+  // Chrome считает create() с прежним id обновлением, а обновление на Windows
+  // не всплывает заново — после «Отложить» напоминание было не видно.
+  assert.notEqual(first, second, 'два показа с одинаковым id — второй не всплывёт');
+  assert.ok(second.startsWith('taskmail:task:t_42'), second);
+});
+
+await check('предыдущий показ снимается, а не копится в центре уведомлений', async () => {
+  const { mock, notifyTask } = await setup();
+  const one = task({ id: 't_42' });
+
+  await notifyTask(one, 15);
+  await new Promise((resolve) => setTimeout(resolve, 5));
+  await notifyTask(one, 15);
+
+  assert.equal(mock.live.size, 1, `на экране осталось ${mock.live.size} уведомлений одной задачи`);
+  assert.equal(mock.cleared.includes(mock.notifications[0].id), true, 'старый показ не снят');
+});
+
+await check('чужие уведомления при этом не трогаются', async () => {
+  const { mock, notifyTask } = await setup();
+
+  await notifyTask(task({ id: 't_1' }), 15);
+  await notifyTask(task({ id: 't_2' }), 15);
+
+  assert.equal(mock.live.size, 2, 'снято уведомление другой задачи');
 });
 
 await check('запрет уведомлений виден расширению', async () => {
