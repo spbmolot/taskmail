@@ -117,6 +117,18 @@ function fillForm(task) {
   updateWhenHint();
 }
 
+/** Статус показываем только при правке: у новой задачи он всегда «в работе». */
+function setStatus(done) {
+  for (const button of $('status').querySelectorAll('button')) {
+    button.setAttribute('aria-selected', String((button.dataset.done === 'true') === done));
+  }
+}
+
+function currentStatus() {
+  const active = $('status').querySelector('button[aria-selected="true"]');
+  return Boolean(active && active.dataset.done === 'true');
+}
+
 function setPriority(priority) {
   for (const button of $('priority').querySelectorAll('button')) {
     button.setAttribute('aria-pressed', String(button.dataset.priority === priority));
@@ -274,6 +286,8 @@ async function init() {
       state.base = task;
       $('title').textContent = 'Редактирование задачи';
       $('save').textContent = 'Сохранить';
+      $('statusField').hidden = false;
+      setStatus(Boolean(task.done));
       showContext(task);
       fillForm(task);
       showTaskLetters(task);
@@ -354,10 +368,19 @@ function collectShared() {
   return shared;
 }
 
+/** Смена статуса из окна правки: дата выполнения проставляется и снимается. */
+function statusFields(base) {
+  if (state.mode !== 'edit') return {};
+  const done = currentStatus();
+  if (done === Boolean(base.done)) return {};
+  return { done, completedAt: done ? Date.now() : null };
+}
+
 function collectSingle(base) {
   return {
     ...base,
     ...collectShared(),
+    ...statusFields(base),
     subject: $('subject').value.trim(),
     senderName: $('senderName').value.trim(),
     senderEmail: $('senderEmail').value.trim(),
@@ -432,6 +455,11 @@ async function save(event) {
 $('dueChips').addEventListener('click', (event) => {
   const chip = event.target.closest('.chip');
   if (chip) applyPreset(chip.dataset.preset);
+});
+
+$('status').addEventListener('click', (event) => {
+  const button = event.target.closest('button[data-done]');
+  if (button) setStatus(button.dataset.done === 'true');
 });
 
 $('priority').addEventListener('click', (event) => {

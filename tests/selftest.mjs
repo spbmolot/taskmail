@@ -20,6 +20,7 @@ import {
   SERVICES,
   dedupeKey,
   displaySender,
+  isMessageLink,
   makeTask,
   normalizeSubject,
   plural,
@@ -215,6 +216,43 @@ check('Яндекс: uid добавляется к задаче, сохранё�
   const parsed = new URL(resolveUrl(legacy));
   assert.equal(parsed.searchParams.get('uid'), '1130000058908991');
   assert.equal(parsed.hash, '#/message/183521684815354082');
+});
+
+check('ссылка на папку отличается от ссылки на письмо', () => {
+  const message = [
+    ['gmail', 'https://mail.google.com/mail/u/0/#all/16be0868ae18c6a7'],
+    ['gmail', 'https://mail.google.com/mail/u/0/#inbox/FMfcgzGtxKZlWjkGxxRSMHZgNvSSHVJn'],
+    ['yandex', 'https://mail.360.yandex.ru/?uid=113#/message/185773484629048712'],
+    ['yandex', 'https://mail.yandex.ru/#message/185773484629048712'],
+    ['mailru', 'https://e.mail.ru/inbox/0:1234-5678/']
+  ];
+  const folder = [
+    ['gmail', 'https://mail.google.com/mail/u/0/#inbox'],
+    ['gmail', 'https://mail.google.com/mail/u/0/#search/from%3Aa%40b.c+in%3Aanywhere'],
+    ['yandex', 'https://mail.360.yandex.ru/?ncrnd=779&uid=113#/folder/67'],
+    ['yandex', 'https://mail.360.yandex.ru/?uid=113#/search?request=a%40b.c'],
+    ['mailru', 'https://e.mail.ru/inbox/']
+  ];
+
+  for (const [service, url] of message) assert.equal(isMessageLink(url, service), true, url);
+  for (const [service, url] of folder) assert.equal(isMessageLink(url, service), false, url);
+  assert.equal(isMessageLink('', 'gmail'), false);
+  assert.equal(isMessageLink('не ссылка', 'gmail'), false);
+});
+
+check('ссылка на папку заменяется поиском по отправителю', () => {
+  // Так выглядела задача, созданная из списка Яндекса, когда идентификатор
+  // письма достать не удалось: «Открыть» показывало ящик вместо письма.
+  const broken = makeTask({
+    serviceId: 'yandex',
+    accountId: '1130000058908991',
+    senderEmail: 'buh@partner.ru',
+    messageLink: 'https://mail.360.yandex.ru/?uid=1130000058908991#/folder/67'
+  });
+
+  const url = resolveUrl(broken);
+  assert.ok(!url.includes('/folder/'), `открывается папка: ${url}`);
+  assert.match(decodeURIComponent(url), /#\/search\?request=buh@partner\.ru/, url);
 });
 
 check('без отправителя остаётся ссылка, собранная при захвате письма', () => {

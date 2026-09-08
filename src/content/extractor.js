@@ -463,13 +463,36 @@
         // В новом интерфейсе строка — ссылка вида /message/188... или #/message/188...
         (row.querySelector('a[href*="/message/"]') || row).getAttribute?.('href')?.match(/\/message\/([^/?#]+)/)?.[1] ||
         (row.id && /\d{6,}/.test(row.id) ? row.id.match(/\d{6,}/)[0] : '') ||
+        this.scanId(row) ||
         '';
 
       return String(raw).replace(/^.*:/, '');
     },
 
+    /**
+     * Последняя попытка найти идентификатор письма: перебор атрибутов строки и
+     * её потомков. Нужна, потому что без идентификатора задача получала ссылку
+     * на папку — «Открыть» показывал ящик вместо письма.
+     */
+    scanId(row) {
+      const nodes = [row, ...row.querySelectorAll('*')].slice(0, 120);
+      for (const node of nodes) {
+        for (const attr of node.attributes || []) {
+          const fromHref = attr.value.match(/\/message\/([^/?#"]+)/);
+          if (fromHref) return fromHref[1];
+          if (!/^(?:data-|id$)/.test(attr.name)) continue;
+          // Идентификатор письма в Яндексе — длинное число (185773484629048712).
+          const numeric = attr.value.match(/\b(\d{15,})\b/);
+          if (numeric) return numeric[1];
+        }
+      }
+      return '';
+    },
+
+    // Ищем по адресу отправителя: тему задачи пользователь правит под себя, и
+    // поиск по ней письма уже не найдёт.
     searchLink(subject, senderEmail) {
-      const request = [subject, senderEmail].filter(Boolean).join(' ').slice(0, 120);
+      const request = (senderEmail || subject || '').slice(0, 120);
       if (!request) return '';
       const query = encodeURIComponent(request);
       return this.isNew()
@@ -540,7 +563,9 @@
 
       const isThread =
         Boolean(row && /thread/i.test(row.className || '')) || /#\/?thread\//.test(location.hash);
-      const messageLink = this.messageUrl(id) || location.href;
+      // Без идентификатора ссылки нет. Подставить сюда location.href нельзя:
+      // это адрес папки, и «Открыть» показывало бы ящик вместо письма.
+      const messageLink = this.messageUrl(id);
       const threadLink = id && isThread ? this.messageUrl(id, 'thread') : '';
 
       return {
@@ -642,7 +667,8 @@
       const scope = row || document;
       const href = (row && row.getAttribute('href')) || '';
       const id = (row && row.getAttribute('data-id')) || (href.match(/\/(\d+:[\d-]+)\//) || [])[1] || '';
-      const link = href ? new URL(href, location.origin).href : location.href;
+      // Для строки списка без href ссылки нет: адрес страницы — это папка.
+      const link = href ? new URL(href, location.origin).href : row ? '' : location.href;
 
       const subject = firstText(scope, [
         '.llc__subject-text',
@@ -669,8 +695,9 @@
         threadId: '',
         messageLink: link,
         threadLink: '',
-        searchLink: subject
-          ? `${location.origin}/search/?q_query=${encodeURIComponent(subject.slice(0, 100))}`
+        // По отправителю, а не по теме: тему задачи пользователь правит под себя.
+        searchLink: senderEmail || subject
+          ? `${location.origin}/search/?q_query=${encodeURIComponent((senderEmail || subject).slice(0, 100))}`
           : '',
         partial: !id
       };

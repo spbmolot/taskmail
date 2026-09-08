@@ -3,6 +3,7 @@ import {
   TASKS,
   displaySender,
   displaySubject,
+  isMessageLink,
   plural,
   priorityInfo,
   serviceLabel,
@@ -238,7 +239,11 @@ function renderCard(task) {
   const actions = document.createElement('div');
   actions.className = 'actions';
 
-  const hasDirectLink = Boolean(task.messageLink || task.threadLink);
+  // Ссылка на папку вместо письма — не «Открыть», а «Найти в почте»: кнопка,
+  // открывающая просто ящик, выглядит сломанной.
+  const link = taskLink(task);
+  const canSearch = Boolean(task.senderEmail || task.searchLink);
+  const hasDirectLink = isMessageLink(link, task.serviceId) || (Boolean(link) && !canSearch);
   if (hasDirectLink) {
     actions.append(
       actionButton('Открыть', async () => {
@@ -248,7 +253,7 @@ function renderCard(task) {
       }, 'primary-action')
     );
   }
-  if (task.senderEmail || task.searchLink) {
+  if (canSearch) {
     // Запасной путь: письмо удалили, перенесли или ссылка устарела. Ищем по
     // адресу отправителя — тема задачи могла измениться и по ней не найдётся.
     const find = actionButton(
@@ -272,6 +277,15 @@ function renderCard(task) {
     );
     snooze.title = `Отложить напоминание на ${minutes} мин`;
     actions.append(snooze);
+  }
+  if (task.done) {
+    // Кружок слева тоже возвращает задачу в работу, но выглядит как отметка, а
+    // не как кнопка, — поэтому у выполненных есть подписанное действие.
+    const reopen = actionButton('Вернуть в работу', () =>
+      act(send('TASK_TOGGLE', { id: task.id, done: false }), 'Возвращено в работу')
+    );
+    reopen.title = 'Снять отметку «выполнено» и вернуть задачу в список активных';
+    actions.append(reopen);
   }
   actions.append(
     actionButton('Изменить', async () => {

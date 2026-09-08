@@ -12,12 +12,21 @@ import { getMeta, setMeta } from '../common/store.js';
 const TASK_NOTIFICATION = 'taskmail:task:';
 export const MISSED_NOTIFICATION = 'taskmail:missed';
 
+/*
+ * Метка показа в конце id. Chrome считает create() с уже существующим id
+ * ОБНОВЛЕНИЕМ уведомления, а обновление на Windows не всплывает заново — оно
+ * молча подменяет запись в центре уведомлений. Из-за этого повторное
+ * напоминание после «Отложить» пользователь просто не видел. Теперь каждый
+ * показ получает свой id, а прошлый показ снимается вручную.
+ * В id задачи (t_<base36>_<случайное>) решётки не бывает — разбор однозначен.
+ */
+const SHOW_MARK = '#';
+
 const ICON = chrome.runtime.getURL('icons/icon128.png');
 
 export function taskIdFromNotification(notificationId) {
-  return notificationId.startsWith(TASK_NOTIFICATION)
-    ? notificationId.slice(TASK_NOTIFICATION.length)
-    : null;
+  if (typeof notificationId !== 'string' || !notificationId.startsWith(TASK_NOTIFICATION)) return null;
+  return notificationId.slice(TASK_NOTIFICATION.length).split(SHOW_MARK)[0] || null;
 }
 
 /**
@@ -45,6 +54,34 @@ function create(id, options) {
   });
 }
 
+function clearOne(id) {
+  return new Promise((resolve) => {
+    try {
+      chrome.notifications.clear(id, () => {
+        void chrome.runtime.lastError;
+        resolve();
+      });
+    } catch (error) {
+      resolve();
+    }
+  });
+}
+
+/** Снимает предыдущие показы этой задачи, чтобы они не копились в центре уведомлений. */
+export async function clearTaskNotifications(taskId) {
+  const own = TASK_NOTIFICATION + taskId;
+  try {
+    const all = await chrome.notifications.getAll();
+    const stale = Object.keys(all || {}).filter(
+      (id) => id === own || id.startsWith(own + SHOW_MARK)
+    );
+    await Promise.all(stale.map(clearOne));
+  } catch (error) {
+    // getAll есть не во всех сборках — снимаем хотя бы уведомление со старым id.
+    await clearOne(own);
+  }
+}
+
 function trim(value, limit) {
   const text = (value || '').replace(/\s+/g, ' ').trim();
   return text.length > limit ? text.slice(0, limit - 1) + '…' : text;
@@ -58,9 +95,13 @@ export async function notifyTask(task, snoozeMinutes) {
   if (task.comment) lines.push(task.comment);
   if (task.priority !== 'normal') lines.push(`Приоритет: ${priorityInfo(task.priority).label}`);
 
+  // Предыдущий показ этой же задачи убираем сами: иначе новый id добавит в
+  // центр уведомлений второй экземпляр той же задачи.
+  await clearTaskNotifications(task.id);
+
   // На Windows нативный toast показывает примерно строку заголовка и две
   // строки текста — остальное обрезает система, поэтому режем сами.
-  const created = await create(TASK_NOTIFICATION + task.id, {
+  const created = await create(`${TASK_NOTIFICATION}${task.id}${SHOW_MARK}${Date.now().toString(36)}`, {
     type: 'basic',
     iconUrl: ICON,
     title: trim(displaySubject(task), 70),
@@ -107,12 +148,12 @@ export async function notifyMissed(tasks) {
   );
 }
 
-/** Короткое уведомление о том, почему задача не создалась. */
-export async function notifyProblem(reason) {
+/** Короткое уведомление о том, что пошло не так: молчаливый отказ выглядит поломкой. */
+export async function notifyProblem(reason, title = 'TaskMail: не удалось создать задачу') {
   await create(`taskmail:problem:${Date.now()}`, {
     type: 'basic',
     iconUrl: ICON,
-    title: 'TaskMail: не удалось создать задачу',
+    title,
     message: trim(reason || 'письмо не распознано', 180),
     priority: 1
   });

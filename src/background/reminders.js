@@ -188,7 +188,10 @@ export async function syncTimeZone() {
 
 /** Перенос напоминания на N минут вперёд от текущего момента. */
 export function snoozeTimes(minutes) {
-  const target = new Date(Date.now() + minutes * 60 * 1000);
+  // Значение приходит и из настроек, и из кнопки уведомления. Нечисловое дало бы
+  // remindAt = NaN, а такая задача молча выпала бы из расписания навсегда.
+  const delay = Number(minutes) > 0 ? Number(minutes) : 15;
+  const target = new Date(Date.now() + delay * 60 * 1000);
   const pad = (value) => String(value).padStart(2, '0');
   const local = `${target.getFullYear()}-${pad(target.getMonth() + 1)}-${pad(target.getDate())}T${pad(
     target.getHours()

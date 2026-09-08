@@ -28,6 +28,14 @@
     </div>
 
     <form id="form" novalidate>
+      <div class="field" id="statusField" hidden>
+        <label>Статус</label>
+        <div class="segmented" id="status">
+          <button type="button" data-done="false" aria-selected="true">В работе</button>
+          <button type="button" data-done="true" aria-selected="false">Выполнена</button>
+        </div>
+      </div>
+
       <div class="field">
         <label for="subject">Тема письма</label>
         <input type="text" id="subject" autocomplete="off" placeholder="(без темы)">
